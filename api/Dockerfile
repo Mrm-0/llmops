@@ -1,0 +1,55 @@
+# 基础镜像：Python 3.12（与 requirements 中 langchain 1.x / pydantic 2.x 等新版本依赖兼容）
+FROM python:3.12-slim-bookworm AS base
+
+# 国内 pip 源，加速依赖安装
+ENV PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple \
+    PIP_DEFAULT_TIMEOUT=120
+
+# 将 requirements.txt 拷贝到根目录下
+COPY requirements.txt .
+
+# 安装主依赖
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --prefix=/pkg -r requirements.txt
+
+# 安装 requirements.txt 中缺失、但代码里实际 import 的运行时依赖
+# （gunicorn/gevent 供 app.py 生产模式使用，psycopg2 供 PostgreSQL 使用，其余为 import 缺失）
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --prefix=/pkg \
+      gunicorn==23.0.0 \
+      gevent \
+      psycopg2-binary==2.9.10 \
+      concurrent-log-handler==0.9.25 \
+      flask-weaviate==1.1.0 \
+      langchain-moonshot \
+      nltk==3.9.1
+
+# 二阶段生产环境构建
+FROM base AS production
+
+# 设置工作目录
+WORKDIR /app/api
+
+# 定义环境变量
+ENV FLASK_APP=app/http/app.py
+ENV FLASK_ENV=production
+ENV FLASK_DEBUG=0
+ENV NLTK_DATA=/app/api/internal/core/unstructured/nltk_data
+ENV HF_ENDPOINT=https://hf-mirror.com
+
+# 设置容器时区为中国标准时间，避免时区错误
+ENV TZ=Asia/Shanghai
+
+# 拷贝第三方依赖包+源码文件
+COPY --from=base /pkg /usr/local
+COPY . /app/api
+
+# 拷贝运行脚本并设置权限
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# 暴露5001端口
+EXPOSE 5001
+
+# 运行脚本并启动项目
+ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]

@@ -1,0 +1,15 @@
+# ============================================
+# 开发/测试依赖（仅本地开发环境安装）
+# 修改后执行:
+#   python -m piptools compile requirements-dev.in
+#   python -m piptools sync requirements-dev.txt
+# ============================================
+
+# 测试框架
+pytest==9.1.1
+
+# 静态检查
+pyflakes
+
+# 依赖锁定工具本身（可选，全局装也行）
+pip-tools

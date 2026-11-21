@@ -1,0 +1,36 @@
+- name: openai
+  label: OpenAI
+  description: OpenAI提供的模型，例如GPT-6、GPT-5.6和GPT-5.5等。
+  icon: icon.svg
+  background: "#E5E7EB"
+  supported_model_types:
+    - chat
+    - completion
+- name: moonshot
+  label: 月之暗面
+  description: Moonshot提供的模型，例如kimi-k3.1-pro、kimi-k3.1-pro-highspeed、kimi-k3等。
+  icon: icon.svg
+  background: "#FFFFFF"
+  supported_model_types:
+    - chat
+- name: deepseek
+  label: DeepSeek
+  description: DeepSeek提供的模型，例如deepseek-flash、deepseek-v4-pro等。
+  icon: icon.svg
+  background: "#FFFFFF"
+  supported_model_types:
+    - chat
+- name: zhipu
+  label: 智谱
+  description: 智谱AI提供的模型，例如glm-5.3-flash、glm-5.3等。
+  icon: icon.png
+  background: "#FFFFFF"
+  supported_model_types:
+    - chat
+#- name: ollama
+#  label: Ollama
+#  description: Ollama提供的本地离线大语言模型，例如qwen2.5-7b等。
+#  icon: icon.svg
+#  background: "#F9FAFB"
+#  supported_model_types:
+#    - chat

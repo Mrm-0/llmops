@@ -1,0 +1,51 @@
+model: kimi-k3.1-pro-highspeed
+label: Kimi K3.1 Pro 高速版
+model_type: chat
+features:
+  - tool_call
+  - agent_thought
+  - image_input
+context_window: 1048576
+max_output_tokens: 1048576
+attributes:
+  model: kimi-k3.1-pro-highspeed
+  base_url: https://api.moonshot.ai/v1
+  stream_usage: true
+parameters:
+  # 高速版与 kimi-k3.1-pro 是同一模型，仅输出速率不同（约 180 tokens/s），参数限制完全一致
+  - name: reasoning_effort
+    label: 推理强度
+    type: string
+    help: 该模型每次调用都会思考且无法关闭，该参数只控制思考深度，官方默认 max。简单任务设为 low 可显著降低延迟与 token 消耗
+    required: false
+    default: max
+    options:
+      - label: 低
+        value: low
+      - label: 高
+        value: high
+      - label: 最高
+        value: max
+  - name: max_tokens
+    label: 最大输出标记
+    type: int
+    help: 单次响应可生成的最大 token 数，官方默认 131072，上限为 1048576；输入与输出合计不能超过 1048576。注意思考过程会先占用该预算
+    required: false
+    default: 131072
+    min: 1
+    max: 1048576
+    precision: 0
+    options: []
+metadata:
+  pricing:
+    input: 4.00
+    output: 20.00
+    unit: 0.000001
+    unit_label: USD / 1M tokens
+    note: 未缓存输入价格；缓存命中输入 0.20。高速版输入/输出费率是 K3.1 Pro 的两倍，换取约 2~3 倍输出生成速度。unit 为每 token 换算系数
+  capabilities:
+    thinking: always_on
+    json_mode: true
+    structured_output: true
+    prefix_completion: true
+    context_caching: true

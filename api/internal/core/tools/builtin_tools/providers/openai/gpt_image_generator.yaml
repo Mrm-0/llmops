@@ -1,0 +1,18 @@
+name: gpt_image_generator
+label: OpenAI生图工具
+description: 一个强大的文生图工具
+params:
+  - name: size
+    label: 尺寸
+    type: select
+    default: 1024x1024
+    required: true
+    options:
+      - value: 1024x1024
+        label: "(方)1024x1024"
+      - value: 1024x1792
+        label: "(横屏)1024x1792"
+      - value: 1792x1024
+        label: "(竖屏)1792x1024"
+      - value: auto
+        label: "自动"

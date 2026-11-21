@@ -1,0 +1,14 @@
+# 本地虚拟环境、缓存、日志、上传文件，都不要进镜像
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+tmp/
+.env
+storage/logs/
+storage/memory/
+storage/vector_store/
+test/storage/
+.git/
+.idea/
+.vscode/

@@ -1,0 +1,67 @@
+model: gpt-6-luna
+label: GPT-6 Luna
+model_type: chat
+features:
+  - tool_call
+  - agent_thought
+  - image_input
+context_window: 1050000
+max_output_tokens: 128000
+attributes:
+  # positions.yaml 中的名字是 gpt-6-Luna，但官方 model id 为全小写 gpt-6-luna，
+  # attributes.model 才是真正发给 OpenAI 的值，所以这里必须用小写
+  model: gpt-6-luna
+  stream_usage: true
+parameters:
+  # gpt-6 系列同属推理模型，同样拒绝 temperature/top_p/presence_penalty/frequency_penalty
+  - name: reasoning_effort
+    label: 推理强度
+    type: string
+    help: 控制回答前的思考深度，该型号支持 none 到 max 全部档位，官方默认 medium。延迟敏感场景建议用 low 或 none
+    required: false
+    default: medium
+    options:
+      - label: 关闭
+        value: none
+      - label: 低
+        value: low
+      - label: 中
+        value: medium
+      - label: 高
+        value: high
+      - label: 超高
+        value: xhigh
+      - label: 最高
+        value: max
+  - name: verbosity
+    label: 回答详细度
+    type: string
+    help: 控制可见回答的长度，不影响推理深度，low 更简洁、high 更详尽
+    required: false
+    default: medium
+    options:
+      - label: 简洁
+        value: low
+      - label: 适中
+        value: medium
+      - label: 详尽
+        value: high
+  - name: max_completion_tokens
+    label: 最大输出标记
+    type: int
+    help: 单次响应可生成的最大 token 数，包含隐藏的推理 token；该型号最大输入 922000，输入与输出合计不能超过上下文窗口
+    required: false
+    default: 8192
+    min: 1
+    max: 128000
+    precision: 0
+    options: []
+metadata:
+  pricing:
+    input: 0.10
+    output: 0.50
+    unit: 0.000001
+    unit_label: USD / 1M tokens
+    note: 缓存命中输入 0.01；272K 以上长上下文输入按 0.20 / 0.75 计；Batch 接口输入 0.05 / 输出 0.25。unit 为每 token 换算系数
+  knowledge_cutoff: 2026-05-18
+  note: Chat Completions 接口下，携带 tools 时 reasoning_effort 必须为 none，否则会 400；要同时使用工具与思考需改用 Responses API

@@ -1,0 +1,266 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+@Time     :2026/10/10 23:21
+@Author   :314907015@qq.com
+@File     :document_service.py
+"""
+import logging
+import random
+import time
+from dataclasses import dataclass
+from datetime import datetime
+from uuid import UUID
+
+from injector import inject
+from redis import Redis
+from sqlalchemy import desc, asc, func
+
+from internal.entity.cache_entity import LOCK_DOCUMENT_UPDATE_ENABLED, LOCK_EXPIRE_TIME
+from internal.entity.dataset_entity import ProcessType, SegmentStatus, DocumentStatus
+from internal.entity.upload_file_entity import ALLOWED_DOCUMENT_EXTENSIONS
+from internal.exception import ForbiddenException, FailException, NotFoundException
+from internal.lib.helper import datetime_to_timestamp
+from internal.model import Dataset, Document, UploadFile, ProcessRule, Segment, Account
+from internal.schema.document_schema import GetDocumentsWithPageReq
+from internal.task.document_task import build_documents, update_document_enabled, delete_document
+from pkg.paginator import Paginator
+from pkg.sqlalchemy import SQLAlchemy
+from .base_service import BaseService
+
+
+@inject
+@dataclass
+class DocumentService(BaseService):
+    """文档服务"""
+    db: SQLAlchemy
+    redis_client: Redis
+
+    def create_documents(
+            self,
+            account: Account,
+            dataset_id: UUID,
+            upload_file_ids: list[UUID],
+            process_type: str = ProcessType.AUTOMATIC,
+            rule: dict = None
+    ) -> tuple[list[Document], str]:
+        """根据传递的信息创建文档并调用异步任务"""
+        # 1.检测知识库权限
+        dataset = self.get(Dataset, dataset_id)
+        if dataset is None or dataset.account_id != account.id:
+            raise ForbiddenException("当前用户无知识库权限或知识库不存在")
+
+        # 2.提取文件并校验文件权限与文件扩展
+        upload_files = self.db.session.query(UploadFile).filter(
+            UploadFile.account_id == account.id,
+            UploadFile.id.in_(upload_file_ids)
+        ).all()
+        upload_files = [
+            upload_file for upload_file in upload_files
+            if upload_file.extension in ALLOWED_DOCUMENT_EXTENSIONS
+        ]
+        if len(upload_files) == 0:
+            logging.warning(
+                "上传文档列表未解析到合法文件,account_id:%(account_id)s,dataset_id:%(dataset_id)s,"
+                "upload_file_ids:%(upload_file_ids)s",
+                {"account_id": account.id, "dataset_id": dataset_id, "upload_file_ids": upload_file_ids}
+            )
+            raise FailException("未解析到合法文件，请重新上传")
+
+        # 3.创建批次与处理规则并记录到数据库中
+        batch = time.strftime("%Y%m%d%H%M%S") + str(random.randint(100000, 999999))
+        process_rule = self.create(
+            ProcessRule,
+            account_id=account.id,
+            dataset_id=dataset_id,
+            mode=process_type,
+            rule=rule,
+        )
+
+        # 4.获取当前知识库的最新文档位置
+        position = self.get_latest_document_position(dataset_id)
+
+        # 5.循环遍历所有的合法上传文件列表并记录
+        documents = []
+        for upload_file in upload_files:
+            position += 1
+            document = self.create(
+                Document,
+                account_id=account.id,
+                dataset_id=dataset_id,
+                upload_file_id=upload_file.id,
+                process_rule_id=process_rule.id,
+                batch=batch,
+                name=upload_file.name,
+                position=position,
+            )
+            documents.append(document)
+
+        # 6.调用异步任务
+        build_documents.delay([doc.id for doc in documents])
+
+        # 7.返回文档列表和批次
+        return documents, batch
+
+    def get_documents_status(self, dataset_id: UUID, batch: str, account: Account):
+        """根据传递的知识库id+批次处理标识获取文档状态"""
+        # 1.检测知识库权限
+        dataset = self.get(Dataset, dataset_id)
+        if dataset is None or dataset.account_id != account.id:
+            raise ForbiddenException("当前用户无知识库权限或知识库不存在")
+
+        # 2.查询当前知识库下该批次的文档列表
+        documents = self.db.session.query(Document).filter(
+            Document.account_id == account.id,
+            Document.dataset_id == dataset_id,
+            Document.batch == batch,
+        ).order_by(asc("position")).all()
+        if documents is None or len(documents) == 0:
+            raise NotFoundException("该处理批次未发现文档，请核实后重试")
+
+        # 3.循环遍历文档列表获取文档信息
+        documents_status = []
+        for document in documents:
+            # 4.查询每个文档的总片段数和已构建完成的片段数
+            segment_count = self.db.session.query(func.count(Segment.id)).filter(
+                Segment.document_id == document.id,
+            ).scalar()
+            completed_segment_count = self.db.session.query(func.count(Segment.id)).filter(
+                Segment.document_id == document.id,
+                Segment.status == SegmentStatus.COMPLETED,
+            ).scalar()
+
+            upload_file = document.upload_file
+            documents_status.append({
+                "id": document.id,
+                "name": document.name,
+                "size": upload_file.size,
+                "extension": upload_file.extension,
+                "mime_type": upload_file.mime_type,
+                "position": document.position,
+                "segment_count": segment_count,
+                "completed_segment_count": completed_segment_count,
+                "error": document.error,
+                "status": document.status,
+                "processing_started_at": datetime_to_timestamp(document.processing_started_at),
+                "parsing_completed_at": datetime_to_timestamp(document.parsing_completed_at),
+                "splitting_completed_at": datetime_to_timestamp(document.splitting_completed_at),
+                "indexing_completed_at": datetime_to_timestamp(document.indexing_completed_at),
+                "completed_at": datetime_to_timestamp(document.completed_at),
+                "stopped_at": datetime_to_timestamp(document.stopped_at),
+                "created_at": datetime_to_timestamp(document.created_at),
+            })
+
+        return documents_status
+
+    def get_document(self, dataset_id: UUID, document_id: UUID, account: Account):
+        """根据传递的知识库id+文档id获取文档信息"""
+        document = self.get(Document, document_id)
+        if document is None:
+            raise NotFoundException("该文档不存在，请核实后重试")
+        if document.dataset_id != dataset_id or document.account_id != account.id:
+            raise ForbiddenException("该用户无权限获取该文档，请核实后重试")
+
+        return document
+
+    def update_document(self, dataset_id: UUID, document_id: UUID, account: Account, **kwargs):
+        """根据传递的知识库id+文档id+更新信息，更新文档"""
+        document = self.get(Document, document_id)
+        if document is None:
+            raise NotFoundException("该文档不存在，请核实后重试")
+        if document.dataset_id != dataset_id or document.account_id != account.id:
+            raise ForbiddenException("该用户无权限修改该文档，请核实后重试")
+
+        return self.update(document, **kwargs)
+
+    def update_document_enabled(self, dataset_id: UUID, document_id: UUID, enabled: bool, account: Account):
+        """根据传递的知识库id+文档id+enabled状态，更新文档启用状态"""
+        # 1.获取文档并校验权限
+        document = self.get(Document, document_id)
+        if document is None:
+            raise NotFoundException("该文档不存在，请核实后重试")
+        if document.dataset_id != dataset_id or document.account_id != account.id:
+            raise ForbiddenException("该用户无权限修改此文档，请核实后重试")
+
+        # 2.判断文档是否处于可修改状态，只有构建完成completed状态下才可修改
+        if document.status != DocumentStatus.COMPLETED:
+            raise ForbiddenException("当前文档处于不可修改状态，请稍后重试")
+
+        # 3.判断修改的启用状态是否正确，需要与当前状态相反
+        if document.enabled == enabled:
+            raise FailException(f"文档状态修改错误，当前已是{'启用' if enabled else '禁用'}状态")
+
+        # 4.获取更新文档启用状态的缓存键并检测是否上锁,并设置缓存键，缓存时间为600s
+        cache_key = LOCK_DOCUMENT_UPDATE_ENABLED.format(document_id=document.id)
+        if not self.redis_client.set(cache_key, 1, ex=LOCK_EXPIRE_TIME, nx=True):
+            raise FailException("当前文档正在修改启用状态，请稍后再次尝试")
+
+        # 5，修改文档的启用状态
+        self.update(
+            document,
+            enabled=enabled,
+            disabled_at=None if enabled else datetime.now()
+        )
+
+        # 6.启用异步任务完成后续操作
+        update_document_enabled.delay(document.id)
+
+        return document
+
+    def delete_document(self, dataset_id: UUID, document_id: UUID, account: Account):
+        """根据传递的知识库id+文档id删除指定文档信息，涵盖：文档片段删除，关键词表更新，weaviate向量数据库记录删除"""
+        # 1.获取文档并校验
+        document = self.get(Document, document_id)
+        if document is None:
+            raise NotFoundException("该文档不存在，请核实后重试")
+        if document.account_id != account.id or document.dataset_id != dataset_id:
+            raise ForbiddenException("该用户无权限删除知识库下的文档，请核实后重试")
+
+        # 2.判断文档是否处于可删除状态，只有构建完成/错误状态下才可删除
+        if document.status not in [DocumentStatus.COMPLETED, DocumentStatus.ERROR]:
+            raise FailException("当前文档处于不可删除状态，请稍后重试")
+
+        # 3.删除postgres中的文档信息
+        self.delete(document)
+
+        # 4.调用异步任务完成后续操作，涵盖片段删除、关键词表更新、weaviate记录删除
+        delete_document.delay(dataset_id, document_id)
+
+        return document
+
+    def get_documents_with_page(
+            self,
+            dataset_id: UUID,
+            req: GetDocumentsWithPageReq,
+            account: Account,
+    ) -> tuple[list[Document], Paginator]:
+        """根据传递的知识库id+请求数据,获取文档列表分页信息"""
+        # 1.提取数据库并校验权限
+        dataset = self.get(Dataset, dataset_id)
+        if dataset is None or dataset.account_id != account.id:
+            raise NotFoundException("该知识库不存在，或无权限")
+
+        # 2.构建分页器
+        paginator = Paginator(db=self.db, req=req)
+
+        # 3.构建筛选器
+        filters = [
+            Document.account_id == account.id,
+            Document.dataset_id == dataset_id,
+        ]
+        if req.search_word.data:
+            filters.append(Document.name.ilike(f"%{req.search_word.data}%"))
+
+        # 4.执行分页并获取数据
+        documents = paginator.paginate(
+            self.db.session.query(Document).filter(*filters).order_by(desc("created_at"))
+        )
+
+        return documents, paginator
+
+    def get_latest_document_position(self, dataset_id: UUID) -> int:
+        """根据传递的知识库id获取文档的最新位置"""
+        document = self.db.session.query(Document).filter(
+            Document.dataset_id == dataset_id,
+        ).order_by(desc("position")).first()
+        return document.position if document else 0

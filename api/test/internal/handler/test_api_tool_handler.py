@@ -1,0 +1,53 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+@Time     :2026/9/17 13:53
+@Author   :314907015@qq.com
+@File     :test_api_tool_handler.py
+"""
+import pytest
+
+from pkg.response import HttpCode
+
+openapi_schema_string = """{
+                                "server": "https://baidu.com", 
+                                "description": "123", 
+                                "paths": {
+                                    "/location": {
+                                        "get": {
+                                            "description": "获取本地位置", 
+                                            "operationId":"xxx", 
+                                            "parameters":[
+                                                {
+                                                    "name":"location", 
+                                                    "in":"query", 
+                                                    "description":"参数描述", 
+                                                    "required":true, 
+                                                    "type":"str"}
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    }"""
+
+
+class TestApiToolHandler:
+    """自定义API处理器测试类"""
+
+    @pytest.mark.parametrize("openapi_schema", ["123", openapi_schema_string])
+    def test_validate_openapi_schema(self, openapi_schema: str, client):
+        resp = client.post(path='/api-tools/validate-openapi-schema', json={"openapi_schema": openapi_schema})
+        assert resp.status_code == 200
+        if openapi_schema == "123":
+            assert resp.json.get("code") == HttpCode.VALIDATE_ERROR
+        elif openapi_schema == openapi_schema_string:
+            assert resp.json.get("code") == HttpCode.SUCCESS
+
+    def test_delete_api_tool_provider(self, client, db):
+        provider_id = "09fb483d-b868-4be0-a3aa-7ae414d76dff"
+        resp = client.post(path=f'/api-tools/{provider_id}/delete')
+        assert resp.status_code == 200
+
+        from internal.model import ApiToolProvider
+        api_tool_provider = db.session.query(ApiToolProvider).get(provider_id)
+        assert api_tool_provider is None

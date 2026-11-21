@@ -1,0 +1,73 @@
+model: glm-5.3-flash
+label: GLM-5.3 Flash
+model_type: chat
+features:
+  - tool_call
+  - agent_thought
+  - image_input
+context_window: 1048576
+max_output_tokens: 131072
+attributes:
+  model: glm-5.3-flash
+  base_url: https://open.bigmodel.cn/api/paas/v4
+  stream_usage: true
+parameters:
+  # 与 GLM-5.3 一致：思考默认开启且不支持关闭，深度只能用 reasoning_effort 控制
+  - name: temperature
+    label: 温度
+    type: float
+    help: 温度控制随机性，GLM-5 系列取值范围 0.0~1.0，官方默认 1.0。注意上限是 1，不是 OpenAI 的 2
+    required: false
+    default: 1
+    min: 0
+    max: 1
+    precision: 2
+    options: []
+  - name: top_p
+    label: Top P
+    type: float
+    help: 核采样率，取值范围 0.01~1.0。留空表示使用服务端默认值，需要控制随机性时再显式设置
+    required: false
+    default: null
+    min: 0.01
+    max: 1
+    precision: 2
+    options: []
+  - name: reasoning_effort
+    label: 推理强度
+    type: string
+    help: 该模型每次调用都会思考且无法关闭，该参数只控制思考深度，官方默认 max。仅支持 low、high、max 三个值
+    required: false
+    default: max
+    options:
+      - label: 低
+        value: low
+      - label: 高
+        value: high
+      - label: 最高
+        value: max
+  - name: max_tokens
+    label: 最大标记
+    type: int
+    help: 单次生成的最大 token 数，取值 1~131072。该额度包含思考过程的 token，建议不要设置过小
+    required: false
+    default: 16384
+    min: 1
+    max: 131072
+    precision: 0
+    options: []
+metadata:
+  pricing:
+    input: 0.15
+    output: 0.50
+    unit: 0.000001
+    unit_label: USD / 1M tokens
+    note: 缓存命中输入 0.03；国内开放平台按人民币计价（输入 0.8 元 / 输出 2.8 元每百万 token）。unit 为每 token 换算系数
+  capabilities:
+    thinking: always_on
+    json_mode: true
+    structured_output: true
+    prefix_completion: true
+    context_caching: true
+    multimodal: [image, video, file]
+  note: 轻量多模态版本，320B 总参数 / 18B 激活，支持图片、视频与文件输入，输出速度约 200 tokens/s

@@ -1,0 +1,69 @@
+model: gpt-5.6-sol
+label: GPT-5.6 Sol
+model_type: chat
+features:
+  - tool_call
+  - agent_thought
+  - image_input
+context_window: 1050000
+max_output_tokens: 128000
+attributes:
+  # positions.yaml 中的名字是 gpt-5.6-Sol，但官方 model id 为全小写 gpt-5.6-sol，
+  # attributes.model 才是真正发给 OpenAI 的值，所以这里必须用小写
+  model: gpt-5.6-sol
+  stream_usage: true
+parameters:
+  # gpt-5 系列属于推理模型，官方明确拒绝 temperature/top_p/presence_penalty/frequency_penalty，
+  # 传了会直接 400（Unsupported parameter），因此这里不提供这些采样参数。
+  - name: reasoning_effort
+    label: 推理强度
+    type: string
+    help: 控制回答前的思考深度。none 关闭思考（最快最省），max 为最强推理；不指定时官方默认 medium
+    required: false
+    default: medium
+    options:
+      - label: 关闭
+        value: none
+      - label: 低
+        value: low
+      - label: 中
+        value: medium
+      - label: 高
+        value: high
+      - label: 超高
+        value: xhigh
+      - label: 最高
+        value: max
+  - name: verbosity
+    label: 回答详细度
+    type: string
+    help: 控制可见回答的长度，不影响推理深度，low 更简洁、high 更详尽
+    required: false
+    default: medium
+    options:
+      - label: 简洁
+        value: low
+      - label: 适中
+        value: medium
+      - label: 详尽
+        value: high
+  # 推理模型的输出上限参数名是 max_completion_tokens，max_tokens 会被直接拒绝
+  - name: max_completion_tokens
+    label: 最大输出标记
+    type: int
+    help: 单次响应可生成的最大 token 数，包含隐藏的推理 token；设置过小会导致回答为空且 finish_reason 为 length
+    required: false
+    default: 8192
+    min: 1
+    max: 128000
+    precision: 0
+    options: []
+metadata:
+  pricing:
+    input: 4.00
+    output: 20.00
+    unit: 0.000001
+    unit_label: USD / 1M tokens
+    note: 官方促销价（有效期至 2026-11-30，此后恢复发布价 5.00 / 30.00）；缓存命中输入 0.40；272K 以上长上下文输入按 8.00 / 30.00 计。unit 为每 token 换算系数
+  knowledge_cutoff: 2026-02-16
+  note: Chat Completions 接口下，携带 tools 时 reasoning_effort 必须为 none，否则会 400；要同时使用工具与思考需改用 Responses API

@@ -1,0 +1,111 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+@Time     :2026/10/26 22:14
+@Author   :314907015@qq.com
+@File     :account.py
+"""
+from flask import current_app
+from flask_login import UserMixin
+from sqlalchemy import (
+    Column,
+    UUID,
+    String,
+    DateTime,
+    PrimaryKeyConstraint,
+    text,
+    Index,
+)
+
+from internal.entity.conversation_entity import InvokeFrom
+from internal.extension.database_extension import db
+from .conversation import Conversation
+
+
+class Account(UserMixin, db.Model):
+    __tablename__ = "account"
+    __table_args__ = (
+        PrimaryKeyConstraint("id", name="pk_account_id"),
+        Index("account_email_idx", "email"),
+    )
+
+    id = Column(UUID, nullable=False, server_default=text("gen_random_uuid()"))
+    name = Column(String(255), nullable=False, server_default=text("''::character varying"))
+    email = Column(String(255), nullable=False, server_default=text("''::character varying"))
+    avatar = Column(String(255), nullable=False, server_default=text("''::character varying"))
+    password = Column(String(255), nullable=True, server_default=text("''::character varying"))
+    password_salt = Column(String(255), nullable=True, server_default=text("''::character varying"))
+    assistant_agent_conversation_id = Column(UUID, nullable=True)  # 辅助智能体会话id
+    last_login_at = Column(DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP(0)"))
+    last_login_ip = Column(String(255), nullable=False, server_default=text("''::character varying"))
+
+    updated_at = Column(
+        DateTime,
+        nullable=False,
+        server_default=text("CURRENT_TIMESTAMP(0)"),
+        server_onupdate=text("CURRENT_TIMESTAMP(0)"),
+    )
+    created_at = Column(
+        DateTime,
+        nullable=False,
+        server_default=text("CURRENT_TIMESTAMP(0)"),
+    )
+
+    @property
+    def is_password_set(self) -> bool:
+        return self.password is not None and self.password != ''
+
+    @property
+    def assistant_agent_conversation(self) -> "Conversation":
+        """只读属性，返回当前账号的辅助Agent会话"""
+        # 1.获取辅助Agent的id
+        assistant_agent_id = current_app.config.get("ASSISTANT_AGENT_ID")
+        conversation = db.session.get(
+            Conversation, self.assistant_agent_conversation_id
+        ) if self.assistant_agent_conversation_id else None
+
+        # 2.判断会话是否存在，不存在则建一个新会话
+        if not self.assistant_agent_conversation_id or not conversation:
+            # 3.开启自动提交
+            with db.auto_commit():
+                # 4.创建辅助Agent会话
+                conversation = Conversation(
+                    app_id=assistant_agent_id,
+                    name="New Conversation",
+                    invoke_from=InvokeFrom.ASSISTANT_AGENT,
+                    created_by=self.id,
+                )
+                db.session.add(conversation)
+                db.session.flush()
+
+                # 5.更新当前账号的辅助Agent会话id
+                self.assistant_agent_conversation_id = conversation.id
+
+        return conversation
+
+
+class AccountOAuth(db.Model):
+    __tablename__ = "account_oauth"
+    __table_args__ = (
+        PrimaryKeyConstraint("id", name="pk_account_oauth_id"),
+        Index("account_oauth_account_id_idx", "account_id"),
+        Index("account_oauth_openid_provider_idx", "openid", "provider"),
+    )
+
+    id = Column(UUID, nullable=False, server_default=text("gen_random_uuid()"))
+    account_id = Column(UUID, nullable=False)
+    provider = Column(String(255), nullable=False, server_default=text("''::character varying"))
+    openid = Column(String(255), nullable=False, server_default=text("''::character varying"))
+    encrypted_token = Column(String(255), nullable=False, server_default=text("''::character varying"))
+
+    updated_at = Column(
+        DateTime,
+        nullable=False,
+        server_default=text("CURRENT_TIMESTAMP(0)"),
+        server_onupdate=text("CURRENT_TIMESTAMP(0)"),
+    )
+    created_at = Column(
+        DateTime,
+        nullable=False,
+        server_default=text("CURRENT_TIMESTAMP(0)"),
+    )

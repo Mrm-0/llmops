@@ -1,0 +1,7 @@
+.env
+venv/*
+tmp/*
+storage/*
+.idea/*
+internal/core/embeddings/
+models/

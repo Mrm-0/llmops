@@ -1,0 +1,42 @@
+model: deepseek-v4-pro
+label: DeepSeek V4 Pro
+model_type: chat
+features:
+  # 官方未公布 V4 Pro 的多模态视觉能力（仅 Flash 明确支持），因此不声明 image_input
+  - tool_call
+  - agent_thought
+context_window: 1048576
+max_output_tokens: 393216
+attributes:
+  model: deepseek-v4-pro
+  stream_usage: true
+parameters:
+  - name: temperature
+    use_template: temperature
+    default: 1
+    help: 温度控制随机性，取值 0~2，官方默认 1。注意 thinking 模式下该参数会被忽略
+  - name: top_p
+    use_template: top_p
+    default: 1
+    help: 核采样率，取值 0~1，默认 1。与 temperature 建议只调其中一个
+  - name: presence_penalty
+    use_template: presence_penalty
+  - name: frequency_penalty
+    use_template: frequency_penalty
+  - name: max_tokens
+    use_template: max_tokens
+    default: 8192
+    max: 393216
+    help: 单次生成的最大 token 数，上限 393216，且输入与输出合计不能超过 1048576
+metadata:
+  pricing:
+    input: 0.66
+    output: 1.98
+    unit: 0.000001
+    unit_label: USD / 1M tokens
+    note: 未命中缓存、非高峰时段价格；高峰时段输入 1.32 / 输出 3.96；缓存命中输入 0.022（高峰 0.044）。unit 为每 token 换算系数
+  capabilities:
+    thinking: true
+    json_output: true
+    responses_api: true
+    anthropic_api: true
