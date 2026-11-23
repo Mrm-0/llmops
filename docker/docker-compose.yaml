@@ -7,8 +7,8 @@ services:
     container_name: llmops-ui
     restart: always
     environment: [ ]
-    ports:
-      - "3000:3000"
+    # 前端不再单独暴露端口，统一由 llmops-nginx 的 80 端口对外服务
+    # （UI 容器内 nginx 没有 /api 转发，直接访问 3000 会导致接口 404）
   llmops-api:
     image: llmops-api:0.1.0
     build:
@@ -18,10 +18,13 @@ services:
     restart: always
     volumes:
       - ./volumes/app/storage:/app/api/storage
+      # 模型文件不进镜像（api/.dockerignore 已排除 models/），运行时从宿主机只读挂载
+      # 部署前确保仓库 api/models/bge-m3 目录已存在（可先运行 api/download_model.py 下载）
+      - ../api/models:/app/api/models:ro
     environment:
       # 模式为API，代表启用API服务
       MODE: api
-      SERVER_WORKER_AMOUNT: 4
+      SERVER_WORKER_AMOUNT: 2
       SERVER_THREAD_AMOUNT: 4
       # 数据库迁移配置
       MIGRATION_ENABLED: 'true'
@@ -34,7 +37,7 @@ services:
       WTF_CSRF_ENABLED: 'false'
       # SQLAlchemy数据库配置
       SQLALCHEMY_DATABASE_URI: postgresql://postgres:${POSTGRES_PASSWORD:-llmops123456}@llmops-db:5432/llmops?client_encoding=utf8
-      SQLALCHEMY_POOL_SIZE: 30
+      SQLALCHEMY_POOL_SIZE: 5
       SQLALCHEMY_POOL_RECYCLE: 3600
       SQLALCHEMY_ECHO: 'true'
       # Redis缓存数据库配置
@@ -66,7 +69,7 @@ services:
       # Github OAuth应用秘钥
       GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
       GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
-      GITHUB_REDIRECT_URI: ${GITHUB_REDIRECT_URI:-http://localhost/api/auth/authorize/github}
+      GITHUB_REDIRECT_URI: ${GITHUB_REDIRECT_URI:-http://192.168.159.128/auth/authorize/github}
       # LangSmith配置
       LANGSMITH_TRACING: 'false'
       LANGSMITH_ENDPOINT: https://api.smith.langchain.com
@@ -108,10 +111,13 @@ services:
     restart: always
     volumes:
       - ./volumes/app/storage:/app/api/storage
+      # 模型文件不进镜像（api/.dockerignore 已排除 models/），运行时从宿主机只读挂载
+      # 部署前确保仓库 api/models/bge-m3 目录已存在（可先运行 api/download_model.py 下载）
+      - ../api/models:/app/api/models:ro
     environment:
       # 模式为celery，代表启用Celery异步任务队列
       MODE: celery
-      CELERY_WORKER_AMOUNT: 4
+      CELERY_WORKER_AMOUNT: 2
       # 数据库迁移配置（迁移只由 llmops-api 执行，这里关闭避免并发冲突）
       MIGRATION_ENABLED: 'false'
       # 服务配置（本地部署请改成虚拟机IP，或在 docker/.env 里覆盖）
@@ -123,7 +129,7 @@ services:
       WTF_CSRF_ENABLED: 'false'
       # SQLAlchemy数据库配置
       SQLALCHEMY_DATABASE_URI: postgresql://postgres:${POSTGRES_PASSWORD:-llmops123456}@llmops-db:5432/llmops?client_encoding=utf8
-      SQLALCHEMY_POOL_SIZE: 30
+      SQLALCHEMY_POOL_SIZE: 5
       SQLALCHEMY_POOL_RECYCLE: 3600
       SQLALCHEMY_ECHO: 'true'
       # Redis缓存数据库配置
@@ -155,7 +161,7 @@ services:
       # Github OAuth应用秘钥
       GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
       GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
-      GITHUB_REDIRECT_URI: ${GITHUB_REDIRECT_URI:-http://localhost/api/auth/authorize/github}
+      GITHUB_REDIRECT_URI: ${GITHUB_REDIRECT_URI:-http://192.168.159.128/auth/authorize/github}
       # LangSmith配置
       LANGSMITH_TRACING: 'false'
       LANGSMITH_ENDPOINT: https://api.smith.langchain.com

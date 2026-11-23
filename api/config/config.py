@@ -32,14 +32,18 @@ class Config:
         self.SQLALCHEMY_ENGINE_OPTIONS = {
             "pool_size": int(_get_env("SQLALCHEMY_POOL_SIZE")),
             "pool_recycle": int(_get_env("SQLALCHEMY_POOL_RECYCLE")),
+            # 取连接前先探活，避免拿到被服务端回收的失效连接（配合 pool_recycle 使用）
+            "pool_pre_ping": True,
         }
         self.SQLALCHEMY_ECHO = _get_bool_env("SQLALCHEMY_ECHO")
 
         # Weaviate向量数据库配置
+        # 注意: flask_weaviate 只识别 WEAVIATE_GRPC_HOST / WEAVIATE_GRPC_PORT 这组 key,
+        #       之前写成 CRPC/WEAVAITE 导致容器内 gRPC 回退到 localhost, 向量库连不上
         self.WEAVIATE_HTTP_HOST = _get_env("WEAVIATE_HTTP_HOST")
-        self.WEAVIATE_HTTP_PORT = _get_env("WEAVIATE_HTTP_PORT")
-        self.WEAVIATE_CRPC_HOST = _get_env("WEAVIATE_CRPC_HOST")
-        self.WEAVIATE_CRPC_PORT = _get_env("WEAVAITE_CRPC_PORT")
+        self.WEAVIATE_HTTP_PORT = int(_get_env("WEAVIATE_HTTP_PORT"))
+        self.WEAVIATE_GRPC_HOST = _get_env("WEAVIATE_GRPC_HOST")
+        self.WEAVIATE_GRPC_PORT = int(_get_env("WEAVIATE_GRPC_PORT"))
         self.WEAVIATE_API_KEY = _get_env("WEAVIATE_API_KEY")
 
         # Redis配置

@@ -78,7 +78,7 @@ class CosService:
         """根据传递的cos云端key获取图片实际的URL地址"""
         cos_domain = os.getenv("COS_DOMAIN")
 
-        if cos_domain:
+        if not cos_domain:
             bucket = os.getenv("COS_BUCKET")
             scheme = os.getenv("COS_SCHEME")
             region = os.getenv("COS_REGION")

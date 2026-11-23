@@ -1,6 +1,7 @@
 # IDE配置相关
 .idea/
 .vscode/
+.workbuddy/
 
 # 字节编译/优化/DLL文件
 __pycache__
@@ -8,7 +9,7 @@ __pycache__
 *$py.class
 
 # API相关
-api/storage/log/
+api/storage/logs/
 api/storage/memory/
 api/tmp/
 api/venv/
