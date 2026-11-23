@@ -5,22 +5,6 @@
 @Author   :314907015@qq.com
 @File     :app.py
 """
-import os
-
-import dotenv
-
-# 将env加载到环境变量中
-dotenv.load_dotenv()
-
-# 1.为开发环境配置猴子补丁
-if os.environ.get("FLASK_ENV") == "production" or os.environ.get("FLASK_DEBUG") == 0:
-    from gevent import monkey
-
-    monkey.patch_all()
-
-    import grpc.experimental.gevent
-
-    grpc.experimental.gevent.init_gevent()
 
 from flask_login import LoginManager
 from flask_migrate import Migrate

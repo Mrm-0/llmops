@@ -1,7 +1,8 @@
 .env
-venv/*
 tmp/*
-storage/*
+storage/log
+storage/memory
 .idea/*
-internal/core/embeddings/
+venv/*
+test/storage/*
 models/

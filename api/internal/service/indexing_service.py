@@ -8,23 +8,21 @@
 import logging
 import re
 import uuid
-from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
 
-from flask import Flask, current_app
 from injector import inject
-from langchain_core.documents import Document as LCDocument
-from redis import Redis
-from sqlalchemy import func
-from weaviate.classes.query import Filter
-
 from internal.core.file_extractor import FileExtractor
 from internal.entity.dataset_entity import DocumentStatus, SegmentStatus
 from internal.lib.helper import generate_text_hash
 from internal.model import Document, Segment, KeywordTable, DatasetQuery
+from langchain_core.documents import Document as LCDocument
 from pkg.sqlalchemy import SQLAlchemy
+from redis import Redis
+from sqlalchemy import func
+from weaviate.classes.query import Filter
+
 from .base_service import BaseService
 from .embeddings_service import EmbeddingsService
 from .jieba_service import JiebaService
@@ -341,52 +339,41 @@ class IndexingService(BaseService):
             lc_segment.metadata['segment_enabled'] = True
 
         # 2.调用向量数据库，每次存储10条数据，避免一次传递过多的数据
-        def thread_func(flask_app: Flask, chunks: list[LCDocument], ids: list[UUID]) -> None:
-            """线程函数，执行向量数据库与postgres数据的存储"""
-            with flask_app.app_context():
-                try:
-                    # 3.调用向量数据库存储对应的数据
-                    self.vector_database_service.vector_store.add_documents(
-                        chunks, ids=ids,
-                    )
-                    # 4.更新关联片段的状态以及完成时间
-                    with self.db.auto_commit():
-                        self.db.session.query(Segment).filter(
-                            Segment.node_id.in_(ids),
-                        ).update({
-                            "status": SegmentStatus.COMPLETED,
-                            "completed_at": datetime.now(),
-                            "enabled": True,
-                        })
-                except Exception as e:
-                    logging.exception("构建文档片段索引发生异常,错误信息:%(error)s", {"error": e})
-                    with self.db.auto_commit():
-                        self.db.session.query(Segment).filter(
-                            Segment.node_id.in_(ids),
-                        ).update({
-                            "status": SegmentStatus.ERROR,
-                            "completed_at": None,
-                            "stopped_at": datetime.now(),
-                            "enabled": False,
-                        })
-
-        with ThreadPoolExecutor(max_workers=5) as executor:
-            futures = []
+        try:
             for i in range(0, len(lc_segments), 10):
-                # 5.提取需要存储的数据和ids
                 chunks = lc_segments[i:i + 10]
-                ids = [chunk.metadata['node_id'] for chunk in chunks]
-                futures.append(executor.submit(thread_func, current_app._get_current_object(), chunks, ids))
+                ids = [chunk.metadata["node_id"] for chunk in chunks]
+                self.vector_database_service.vector_store.add_documents(chunks, ids=ids)
+                with self.db.auto_commit():
+                    self.db.session.query(Segment).filter(
+                        Segment.node_id.in_(ids)
+                    ).update({
+                        "status": SegmentStatus.COMPLETED,
+                        "completed_at": datetime.now(),
+                        "enabled": True,
+                    })
+        except Exception as e:
+            logging.exception(
+                "构建文档片段索引发生异常, 错误信息: %(error)s",
+                {"error": e},
+            )
+            with self.db.auto_commit():
+                self.db.session.query(Segment).filter(
+                    Segment.node_id.in_(ids)
+                ).update({
+                    "status": SegmentStatus.ERROR,
+                    "completed_at": None,
+                    "stopped_at": datetime.now(),
+                    "enabled": False,
+                    "error": str(e),
+                })
 
-            for future in futures:
-                future.result()
-
-        # 6.更新文档的状态以及完成时间
+        # 6.更新文档的状态数据
         self.update(
             document,
             status=DocumentStatus.COMPLETED,
             completed_at=datetime.now(),
-            enabled=True
+            enabled=True,
         )
 
     @classmethod

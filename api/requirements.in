@@ -1,3 +1,6 @@
+# 环境变量与依赖注入
+python-dotenv
+
 # --- Web 框架 ---
 Flask==3.1.3
 flask-cors==6.0.5
@@ -8,6 +11,12 @@ flask-weaviate==1.1.0
 Flask-WTF==1.3.0
 Werkzeug==3.1.9
 WTForms==3.3.2
+pywin32>=226; platform_system == "Windows"  # concurrent-log-handler的子依赖，在windows环境下需要
+email-validator
+marshmallow
+
+# JWT鉴权
+PyJWT==2.15.1
 
 # --- 数据库 / 缓存 / 向量库 ---
 # 注意: PostgreSQL 驱动，之前 requirements.txt 漏写导致重建 venv 后启动失败
@@ -22,6 +31,7 @@ concurrent-log-handler==0.9.31
 
 # --- 生产部署 ---
 gevent==26.9.0
+gunicorn
 
 # --- LangChain 全家桶 ---
 langchain-classic==1.0.8
@@ -38,16 +48,25 @@ langgraph==1.2.22
 # --- 核心库 ---
 pydantic==2.14.3
 injector==0.24.0
-PyJWT==2.15.1
+transformers
+pandas
 PyYAML==6.0.3
 Jinja2==3.1.6
 jieba==0.42.1
 sentence-transformers==6.3.0
-marshmallow==4.4.0
-python-dotenv==1.2.4
 Requests==2.34.2
 tiktoken==0.14.0
-cos-python-sdk-v5==1.9.44
 
-# ---其他---
+# 数据存储与检索
+cos-python-sdk-v5
+
+# 文件解析
+unstructured[md]
+
+# 内置工具
+wikipedia
 faiss-cpu
+duckduckgo-search
+
+# 微信公众号开发
+wechatpy

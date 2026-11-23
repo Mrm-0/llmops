@@ -13,7 +13,7 @@ from uuid import UUID
 from injector import inject
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_openai import ChatOpenAI
+from langchain_deepseek import ChatDeepSeek
 
 from internal.entity.ai_entity import OPTIMIZE_PROMPT_TEMPLATE
 from internal.exception import NotFoundException, ForbiddenException
@@ -55,7 +55,7 @@ class AIService(BaseService):
         ])
 
         # 2.构建LLM
-        llm = ChatOpenAI(model="deepseek-chat", temperature=0.5)
+        llm = ChatDeepSeek(model="deepseek-chat", temperature=0.5)
 
         # 3.组装优化链
         optimize_chain = prompt_template | llm | StrOutputParser()

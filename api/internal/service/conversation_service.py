@@ -16,7 +16,7 @@ from flask import Flask, current_app
 from injector import inject
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_openai import ChatOpenAI
+from langchain_deepseek import ChatDeepSeek
 from sqlalchemy import desc
 from sqlalchemy.orm import joinedload
 
@@ -49,7 +49,7 @@ class ConversationService(BaseService):
         prompt = ChatPromptTemplate.from_template(SUMMARIZER_TEMPLATE)
 
         # 2.构建大语言模型实例，并且将大语言的模型温度调低，降低幻觉的概率
-        llm = ChatOpenAI(model="deepseek-chat", temperature=0.5)
+        llm = ChatDeepSeek(model="deepseek-chat", temperature=0.5)
 
         # 3.构建链应用
         summary_chain = prompt | llm | StrOutputParser()
@@ -72,7 +72,7 @@ class ConversationService(BaseService):
         ])
 
         # 2.构建大语言模型实例
-        llm = ChatOpenAI(model="deepseek-chat", temperature=0.5)
+        llm = ChatDeepSeek(model="deepseek-chat", temperature=0.5)
         structured_llm = llm.with_structured_output(ConversationInfo, method="function_calling")
 
         # 3.构建链应用
@@ -111,7 +111,7 @@ class ConversationService(BaseService):
         ])
 
         # 2.构建大语言模型实例
-        llm = ChatOpenAI(model="deepseek-chat", temperature=0.5)
+        llm = ChatDeepSeek(model="deepseek-chat", temperature=0.5)
         structured_llm = llm.with_structured_output(SuggestedQuestions, method="function_calling")
 
         # 3.构建链应用

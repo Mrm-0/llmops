@@ -28,7 +28,7 @@ services:
       # JWT加密秘钥（改到 docker/.env 配置）
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       # 服务配置（本地部署请改成虚拟机IP，或在 docker/.env 里覆盖）
-      SERVICE_IP: ${SERVICE_IP:-127.0.0.1}
+      SERVICE_IP: ${SERVICE_IP:-192.168.159.128}
       SERVICE_API_PREFIX: ${SERVICE_API_PREFIX:-http://localhost/api}
       # CSRF校验开关
       WTF_CSRF_ENABLED: 'false'
@@ -68,27 +68,24 @@ services:
       GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
       GITHUB_REDIRECT_URI: ${GITHUB_REDIRECT_URI:-http://localhost/api/auth/authorize/github}
       # LangSmith配置
-      LANGCHAIN_TRACING_V2: 'false'
-      LANGCHAIN_ENDPOINT: https://api.smith.langchain.com
-      LANGCHAIN_API_KEY: ${LANGCHAIN_API_KEY}
-      LANGCHAIN_PROJECT: ${LANGCHAIN_PROJECT:-LLMOpsDev}
+      LANGSMITH_TRACING: 'false'
+      LANGSMITH_ENDPOINT: https://api.smith.langchain.com
+      LANGSMITH_API_KEY: ${LANGSMITH_API_KEY}
+      LANGSMITH_PROJECT: ${LANGSMITH_PROJECT:-LLMOpsDev}
       # HuggingFace配置
-      TRANSFORMERS_OFFLINE: 0
+      HF_HUB_OFFLINE: 0
       # 辅助Agent智能体应用id标识
       ASSISTANT_AGENT_ID: ${ASSISTANT_AGENT_ID}
       # OpenAI服务提供者
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       OPENAI_API_BASE: ${OPENAI_API_BASE:-https://api.openai.com/v1}
-      # DeepSeek服务提供者
+      # Deepseek服务提供者
       DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
       DEEPSEEK_API_BASE: https://api.deepseek.com
-      # 百度千帆服务提供者
-      qianfan_ak: ${QIANFAN_AK}
-      qianfan_sk: ${QIANFAN_SK}
       # 月之暗面服务提供者
       MOONSHOT_API_KEY: ${MOONSHOT_API_KEY}
-      # 通义千问服务提供者
-      DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY}
+      # 智谱服务提供者
+      ZHIPU_API_KEY: ${ZHIPU_API_KEY}
       # 高德工具API秘钥
       GAODE_API_KEY: ${GAODE_API_KEY}
       # 谷歌Serper搜索API秘钥
@@ -118,7 +115,7 @@ services:
       # 数据库迁移配置（迁移只由 llmops-api 执行，这里关闭避免并发冲突）
       MIGRATION_ENABLED: 'false'
       # 服务配置（本地部署请改成虚拟机IP，或在 docker/.env 里覆盖）
-      SERVICE_IP: ${SERVICE_IP:-127.0.0.1}
+      SERVICE_IP: ${SERVICE_IP:-192.168.159.128}
       SERVICE_API_PREFIX: ${SERVICE_API_PREFIX:-http://localhost/api}
       # JWT加密秘钥（改到 docker/.env 配置）
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
@@ -160,12 +157,12 @@ services:
       GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
       GITHUB_REDIRECT_URI: ${GITHUB_REDIRECT_URI:-http://localhost/api/auth/authorize/github}
       # LangSmith配置
-      LANGCHAIN_TRACING_V2: 'false'
-      LANGCHAIN_ENDPOINT: https://api.smith.langchain.com
-      LANGCHAIN_API_KEY: ${LANGCHAIN_API_KEY}
-      LANGCHAIN_PROJECT: ${LANGCHAIN_PROJECT:-LLMOpsDev}
+      LANGSMITH_TRACING: 'false'
+      LANGSMITH_ENDPOINT: https://api.smith.langchain.com
+      LANGSMITH_API_KEY: ${LANGSMITH_API_KEY}
+      LANGSMITH_PROJECT: ${LANGSMITH_PROJECT:-LLMOpsDev}
       # HuggingFace配置
-      TRANSFORMERS_OFFLINE: 0
+      HF_HUB_OFFLINE: 0
       # 辅助Agent智能体应用id标识
       ASSISTANT_AGENT_ID: ${ASSISTANT_AGENT_ID}
       # OpenAI服务提供者
@@ -174,13 +171,10 @@ services:
       # DeepSeek服务提供者
       DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
       DEEPSEEK_API_BASE: https://api.deepseek.com
-      # 百度千帆服务提供者
-      qianfan_ak: ${QIANFAN_AK}
-      qianfan_sk: ${QIANFAN_SK}
       # 月之暗面服务提供者
       MOONSHOT_API_KEY: ${MOONSHOT_API_KEY}
-      # 通义千问服务提供者
-      DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY}
+      # 智谱服务提供者
+      ZHIPU_API_KEY: ${ZHIPU_API_KEY}
       # 高德工具API秘钥
       GAODE_API_KEY: ${GAODE_API_KEY}
       # 谷歌Serper搜索API秘钥
@@ -248,9 +242,9 @@ services:
       CLUSTER_HOSTNAME: 'node1'  # 节点的主机名字
       AUTHENTICATION_APIKEY_ENABLED: 'true'  # 启动基于API秘钥的身份校验
       AUTHENTICATION_APIKEY_ALLOWED_KEYS: ${WEAVIATE_API_KEY}  # 允许的API秘钥列表
-      AUTHENTICATION_APIKEY_USERS: 'llmops@imooc.com'  # 基于秘钥的API身份列表
+      AUTHENTICATION_APIKEY_USERS: 'mingfengchen2026@163.com'  # 基于秘钥的API身份列表
       AUTHORIZATION_ADMINLIST_ENABLED: 'true'  # 启动AdminList授权方案
-      AUTHORIZATION_ADMINLIST_USERS: 'llmops@imooc.com'  # 使用AdminList方案时具有管理权限的用户
+      AUTHORIZATION_ADMINLIST_USERS: 'mingfengchen2026@163.com'  # 使用AdminList方案时具有管理权限的用户
     volumes:
       - ./volumes/weaviate:/var/lib/weaviate
     ports:

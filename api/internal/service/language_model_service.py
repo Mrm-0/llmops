@@ -5,6 +5,7 @@
 @Author   :314907015@qq.com
 @File     :language_model_service.py
 """
+import logging
 import mimetypes
 import os
 from dataclasses import dataclass
@@ -122,7 +123,11 @@ class LanguageModelService(BaseService):
                 features=model_entity.features,
                 metadata=model_entity.metadata,
             )
-        except Exception as _:
+        except Exception as e:
+            logging.exception(
+                "加载模型[%(provider)s/%(model)s]失败，已回退默认模型",
+                {"provider": model_config.get('provider'), "model": model_config.get('model')},
+            )
             return self.load_default_language_model()
 
     @classmethod

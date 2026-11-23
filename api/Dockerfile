@@ -12,18 +12,6 @@ COPY requirements.txt .
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --prefix=/pkg -r requirements.txt
 
-# 安装 requirements.txt 中缺失、但代码里实际 import 的运行时依赖
-# （gunicorn/gevent 供 app.py 生产模式使用，psycopg2 供 PostgreSQL 使用，其余为 import 缺失）
-RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --prefix=/pkg \
-      gunicorn==23.0.0 \
-      gevent \
-      psycopg2-binary==2.9.10 \
-      concurrent-log-handler==0.9.25 \
-      flask-weaviate==1.1.0 \
-      langchain-moonshot \
-      nltk==3.9.1
-
 # 二阶段生产环境构建
 FROM base AS production
 
