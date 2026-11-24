@@ -19,8 +19,9 @@ os.environ.setdefault("HF_ENDPOINT", "https://hf-mirror.com")
 
 from huggingface_hub import snapshot_download
 
-# 3.目标目录与项目代码保持一致：embeddings_service._DEFAULT_MODEL_DIR
-MODEL_DIR = Path(__file__).resolve().parent / "models" / "bge-m3"
+# 3.目标目录与项目代码保持一致：embeddings_service._DEFAULT_MODEL_DIR（api/models/bge-m3）
+# 注意：本脚本在 scripts/ 子目录下，需取上级目录；compose 也是挂载的 api/models
+MODEL_DIR = Path(__file__).resolve().parents[1] / "models" / "bge-m3"
 WEIGHT_FILE = MODEL_DIR / "pytorch_model.bin"
 
 # 4.bge-m3 仓库根目录的全部文件；显式列出以排除仓库中的 onnx/ 等无关大目录

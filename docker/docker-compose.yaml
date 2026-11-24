@@ -36,7 +36,7 @@ services:
       # CSRF校验开关
       WTF_CSRF_ENABLED: 'false'
       # SQLAlchemy数据库配置
-      SQLALCHEMY_DATABASE_URI: postgresql://postgres:${POSTGRES_PASSWORD:-llmops123456}@llmops-db:5432/llmops?client_encoding=utf8
+      SQLALCHEMY_DATABASE_URI: postgresql+psycopg2://postgres:${POSTGRES_PASSWORD:-llmops123456}@llmops-db:5432/llmops?client_encoding=utf8
       SQLALCHEMY_POOL_SIZE: 5
       SQLALCHEMY_POOL_RECYCLE: 3600
       SQLALCHEMY_ECHO: 'true'
@@ -128,7 +128,7 @@ services:
       # CSRF校验开关
       WTF_CSRF_ENABLED: 'false'
       # SQLAlchemy数据库配置
-      SQLALCHEMY_DATABASE_URI: postgresql://postgres:${POSTGRES_PASSWORD:-llmops123456}@llmops-db:5432/llmops?client_encoding=utf8
+      SQLALCHEMY_DATABASE_URI: postgresql+psycopg2://postgres:${POSTGRES_PASSWORD:-llmops123456}@llmops-db:5432/llmops?client_encoding=utf8
       SQLALCHEMY_POOL_SIZE: 5
       SQLALCHEMY_POOL_RECYCLE: 3600
       SQLALCHEMY_ECHO: 'true'

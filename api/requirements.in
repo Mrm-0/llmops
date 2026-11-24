@@ -20,7 +20,7 @@ PyJWT==2.15.1
 
 # --- 数据库 / 缓存 / 向量库 ---
 # 注意: PostgreSQL 驱动，之前 requirements.txt 漏写导致重建 venv 后启动失败
-psycopg2-binary==2.9.13
+psycopg[binary]>=3.2
 alembic==1.19.1
 redis==8.1.0
 weaviate-client==4.23.1

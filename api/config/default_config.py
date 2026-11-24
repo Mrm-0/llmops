@@ -12,7 +12,7 @@ DEFAULT_CONFIG = {
     "WTF_CSRF_ENABLED": "False",
 
     # SQLAlchemy数据库配置
-    "SQLALCHEMY_DATABASE_URI": "postgresql://postgres:1234@192.168.159.129:5432/llmops",
+    "SQLALCHEMY_DATABASE_URI": "postgresql+psycopg2://postgres:1234@192.168.159.129:5432/llmops",
     "SQLALCHEMY_POOL_SIZE": 30,
     "SQLALCHEMY_POOL_RECYCLE": 3600,
     "SQLALCHEMY_ECHO": "True",

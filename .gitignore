@@ -11,6 +11,7 @@ __pycache__
 # API相关
 api/storage/logs/
 api/storage/memory/
+api/storage/vector_store/
 api/tmp/
 api/venv/
 api/test/storage/

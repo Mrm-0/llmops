@@ -402,8 +402,10 @@ protobuf==6.33.6
     # via weaviate-client
 psutil==7.2.2
     # via unstructured
-psycopg2-binary==2.9.13
+psycopg[binary]==3.3.9
     # via -r requirements.in
+psycopg-binary==3.3.9
+    # via psycopg
 pycparser==3.12
     # via cffi
 pycryptodome==4.5.0
@@ -588,6 +590,7 @@ typing-extensions==4.16.0
     #   langchain-protocol
     #   langsmith
     #   openai
+    #   psycopg
     #   pydantic
     #   pydantic-core
     #   pydantic-settings
@@ -605,6 +608,7 @@ tzdata==2026.6
     # via
     #   kombu
     #   pandas
+    #   psycopg
     #   python-dateutil
     #   tzlocal
 tzlocal==5.4.5
