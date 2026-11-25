@@ -14,15 +14,17 @@ const props = defineProps({
 </script>
 
 <template>
-  <div class="flex gap-2">
-    <!-- 左侧头像 -->
+  <div class="flex flex-row-reverse gap-2">
+    <!-- 右侧头像 -->
     <a-avatar :image-url="props.account?.avatar" :size="30" class="flex-shrink-0" shape="circle" />
-    <!-- 右侧昵称与消息 -->
-    <div class="flex flex-col items-start gap-2">
+    <!-- 左侧昵称与消息（整体右对齐） -->
+    <div class="flex flex-col items-end gap-2 max-w-[80%]">
       <!-- 账号昵称 -->
       <div class="text-gray-700 font-bold">{{ props.account?.name }}</div>
       <!-- 人类消息 -->
-      <div class="bg-blue-100 border border-blue-200 text-gray-700 px-4 py-3 rounded-2xl break-all">
+      <div
+        class="bg-blue-100 border border-blue-200 text-gray-700 px-4 py-3 rounded-2xl break-all"
+      >
         <a-image v-for="(image_url, idx) in props.image_urls" :key="idx" :src="String(image_url)" />
         {{ props.query }}
       </div>

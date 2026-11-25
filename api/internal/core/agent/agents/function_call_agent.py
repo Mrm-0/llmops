@@ -213,6 +213,13 @@ class FunctionCallAgent(BaseAgent):
                 "iteration_count": state['iteration_count'] + 1,
             }
 
+        # 修正生成类型：部分模型（如DeepSeek）会先输出一段思考文本、再发起工具调用，
+        # 此时首个chunk带content会把generation_type误判为message，导致走到最终答案分支
+        # 提前发布AGENT_END，监听线程立即断开，后续的工具调用事件与真正的最终答案全部丢失。
+        # 以最终聚合消息中是否包含tool_calls为准进行修正。
+        if getattr(gathered, "tool_calls", None):
+            generation_type = "thought"
+
         # 8.计算LLM的输入+输出token总数
         input_token_count = self.llm.get_num_tokens_from_messages(state['messages'])
         output_token_count = self.llm.get_num_tokens_from_messages([gathered])
@@ -227,7 +234,9 @@ class FunctionCallAgent(BaseAgent):
         # 11.如果类型为推理则添加智能体推理事件
         if generation_type == "thought":
             self.agent_queue_manager.publish(state['task_id'], AgentThought(
-                id=id,
+                # 注意：这里使用新的uuid，因为流式输出阶段可能已经用原id发布过AGENT_MESSAGE事件
+                # （模型先输出文本再发起工具调用的场景），复用id会在服务层覆盖已累积的思考文本
+                id=uuid.uuid4(),
                 task_id=state['task_id'],
                 event=QueueEvent.AGENT_THOUGHT,
                 thought=json.dumps(gathered.tool_calls),

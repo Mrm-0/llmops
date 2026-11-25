@@ -42,11 +42,15 @@ class AudioService(BaseService):
         audio_file.name = "recording.wav"
 
         # 2.创建OpenAI客户端，并调用whisper服务将音频转换成文字
-        client = self._get_openai_client()
-        transcription = client.audio.transcriptions.create(
-            model="whisper-1",
-            file=audio_file,
-        )
+        try:
+            client = self._get_openai_client()
+            transcription = client.audio.transcriptions.create(
+                model="whisper-1",
+                file=audio_file,
+            )
+        except Exception as error:
+            logging.error("语音转文字失败: %(error)s", {"error": error}, exc_info=True)
+            raise FailException("语音转文字失败，当前API服务不支持语音识别，请稍后重试")
 
         # 3.返回识别的文字内容
         return transcription.text
@@ -93,6 +97,8 @@ class AudioService(BaseService):
             raise FailException("该应用未开启文字转语音功能，请核实后重试")
 
         # 6.调用tts服务将消息answer转换成流式事件输出语音
+        # 注意：with_streaming_response.create是懒执行，真正的HTTP请求发生在__enter__()时，
+        # 因此必须在try块内显式调用__enter__()，否则404等错误会在流式输出过程中才抛出，无法被捕获
         try:
             client = self._get_openai_client()
             response = client.audio.speech.with_streaming_response.create(
@@ -101,6 +107,7 @@ class AudioService(BaseService):
                 response_format="mp3",
                 input=message.answer.strip(),
             )
+            stream = response.__enter__()
         except Exception as error:
             logging.error("文字转语音失败: %(error)s", {"error": error}, exc_info=True)
             raise FailException("文字转语音失败，请稍后重试")
@@ -113,7 +120,7 @@ class AudioService(BaseService):
                 "message_id": str(message.id),
                 "audio": "",
             }
-            for chunk in response.__enter__().iter_bytes(1024):
+            for chunk in stream.iter_bytes(1024):
                 data = {**common_data, "audio": base64.b64encode(chunk).decode("utf-8")}
                 yield f"event: tts_message\ndata: {json.dumps(data)}\n\n"
             yield f"event: tts_end\ndata: {json.dumps(common_data)}\n\n"
