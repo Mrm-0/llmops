@@ -6,8 +6,10 @@
 @File     :chat.py
 """
 import os
-from typing import Any
+from typing import Any, Callable, Sequence
 
+from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.messages import BaseMessage
 from langchain_openai import ChatOpenAI
 
 from internal.core.language_model.entities.model_entity import BaseLanguageModel
@@ -21,3 +23,13 @@ class Chat(ChatOpenAI, BaseLanguageModel):
         if api_key:
             kwargs.setdefault("api_key", api_key)
         super().__init__(**kwargs)
+
+    def get_num_tokens_from_messages(
+        self,
+        messages: Sequence[BaseMessage],
+        tools: Sequence[dict[str, Any] | type | Callable] | None = None,
+        **kwargs: Any,
+    ) -> int:
+        """langchain-openai的实现只支持OpenAI官方模型名，glm系列会抛
+        NotImplementedError，这里回退到langchain_core通用实现（tiktoken估算）。"""
+        return BaseChatModel.get_num_tokens_from_messages(self, messages)
