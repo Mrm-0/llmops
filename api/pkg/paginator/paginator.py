@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from typing import Any, List
 
 from flask_wtf import FlaskForm
+from sqlalchemy.orm import Query
 from wtforms.fields.numeric import IntegerField
 from wtforms.validators import Optional, NumberRange
 
@@ -44,6 +45,12 @@ class Paginator:
 
     def paginate(self, select) -> List[Any]:
         """对传入的查询进行分类"""
+        # 0.兼容 legacy Query：flask-sqlalchemy 3.x 的 db.paginate() 只接受 Select 语句，
+        #   直接传 self.db.session.query(...) 会抛 "Not an executable object"。
+        #   Query.statement 可以拿到它对应的 Select，这样调用方无需改写 11 处代码
+        if isinstance(select, Query):
+            select = select.statement
+
         # 1.调用db.paginate进行数据分页
         p = self.db.paginate(select, page=self.current_page, per_page=self.page_size, error_out=False)
 
