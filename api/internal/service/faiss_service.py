@@ -38,6 +38,18 @@ class FaissService:
         #   避免首次部署（vector_store目录尚不存在）时应用无法启动
         self._faiss: FAISS | None = None
 
+        # 4.记录加载失败时的索引文件指纹，避免每次对话都重复加载/探测维度；
+        #   索引被重建（文件时间或大小变化）后会自动重试
+        self._failed_signature: tuple[int, int] | None = None
+
+    def _index_signature(self) -> tuple[int, int] | None:
+        """索引文件指纹（mtime_ns + size），用于判断索引是否已被重建"""
+        try:
+            stat = (self._faiss_vector_store_path / "index.faiss").stat()
+            return stat.st_mtime_ns, stat.st_size
+        except OSError:
+            return None
+
     @property
     def is_available(self) -> bool:
         """判断本地FAISS索引是否可用（索引文件是否已生成）"""
@@ -53,31 +65,48 @@ class FaissService:
                     f"FAISS索引不存在：{self._faiss_vector_store_path}，"
                     f"请先创建知识库并完成文档索引后再使用知识库检索功能"
                 )
-            self._faiss = FAISS.load_local(
+            vector_store = FAISS.load_local(
                 folder_path=self._faiss_vector_store_path,
                 embeddings=self.embeddings_service.embeddings,
                 allow_dangerous_deserialization=True,
             )
+
+            # 校验索引维度与当前embedding模型是否一致。
+            # 常见场景：索引来自旧环境（如OpenAI 1536维），而当前模型是BGE-M3（1024维），
+            # 此时load_local能成功，但检索时faiss会因维度不符直接报错，提前拦下更清晰。
+            expected_dim = len(self.embeddings_service.embeddings.embed_query("dimension-check"))
+            if vector_store.index.d != expected_dim:
+                raise ValueError(
+                    f"FAISS索引维度({vector_store.index.d})与当前embedding模型维度({expected_dim})不一致，"
+                    f"请执行 `python scripts/rebuild_faiss_index.py` 重建索引"
+                )
+
+            self._faiss = vector_store
         return self._faiss
 
     def convert_faiss_to_tool(self) -> Optional[BaseTool]:
         """将Faiss向量数据库检索器转换成LangChain工具
 
-        本地FAISS索引不存在时（例如全新部署、尚未构建本地索引），
+        索引不存在或不可用（如维度与当前embedding模型不匹配）时，
         返回None而不是抛异常，由调用方跳过该工具，避免整个Agent不可用。
         """
-        if not self.is_available:
+        try:
+            if self._failed_signature is not None and self._failed_signature == self._index_signature():
+                return None
+
+            # 1.将Faiss向量数据库转换成检索器
+            retrieval = self.faiss.as_retriever(
+                search_type="mmr",
+                search_kwargs={"k": 5, "fetch_k": 20},
+            )
+        except Exception as exc:  # noqa: BLE001 - 降级容错，任何加载失败都不应拖垮对话
+            self._failed_signature = self._index_signature()
             logging.getLogger(__name__).warning(
-                "FAISS索引不存在（%s），本次跳过知识库检索工具",
+                "FAISS索引不可用（%s）：%s，本次跳过知识库检索工具",
                 self._faiss_vector_store_path,
+                exc,
             )
             return None
-
-        # 1.将Faiss向量数据库转换成检索器
-        retrieval = self.faiss.as_retriever(
-            search_type="mmr",
-            search_kwargs={"k": 5, "fetch_k": 20},
-        )
 
         # 2.构建检索链，并将检索的结果合并成字符串
         search_chain = retrieval | combine_documents
