@@ -4,7 +4,8 @@ import MarkdownIt from 'markdown-it'
 import DotFlashing from '@/components/DotFlashing.vue'
 import { useAudioPlayer } from '@/hooks/use-audio'
 import AgentThought from './AgentThought.vue'
-import 'github-markdown-css'
+// 固定使用浅色主题，避免系统深色模式把Markdown区域刷成黑色背景
+import 'github-markdown-css/github-markdown-light.css'
 
 const { textToAudioLoading, isPlaying, startAudioStream, stopAudioStream } = useAudioPlayer()
 
@@ -30,7 +31,7 @@ const props = defineProps({
     required: true
   },
   suggested_questions: { type: Array as PropType<string[]>, default: () => [], required: false },
-  message_class: { type: String, default: '!bg-gray-100', required: false }
+  message_class: { type: String, default: 'bg-slate-50', required: false }
 })
 const emits = defineEmits(['selectSuggestedQuestion'])
 const md = MarkdownIt()
@@ -61,13 +62,13 @@ const compiledMarkdown = computed(() => {
       <!-- AI消息 -->
       <div
         v-if="props.loading && props.answer.trim() === ''"
-        :class="`${props.message_class} border border-blue-100 shadow-sm text-gray-700 px-4 py-3 rounded-2xl break-all`"
+        :class="`${props.message_class} border border-slate-200 shadow-sm text-gray-700 px-4 py-3 rounded-2xl break-all`"
       >
         <dot-flashing />
       </div>
       <div
         v-else
-        :class="`${props.message_class} markdown-body border border-blue-100 shadow-sm text-gray-700 px-4 py-3 rounded-2xl break-all`"
+        :class="`${props.message_class} ai-markdown markdown-body border border-slate-200 shadow-sm text-gray-700 px-4 py-3 rounded-2xl break-all`"
         v-html="compiledMarkdown"
       ></div>
       <!-- 消息展示与操作 -->
@@ -117,4 +118,60 @@ const compiledMarkdown = computed(() => {
   </div>
 </template>
 
-<style scoped></style>
+<style>
+/* AI回答的Markdown区域：背景交由气泡控制，避免github-markdown-css自带的纯白/深色背景 */
+.ai-markdown.markdown-body {
+  background-color: transparent !important;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.75;
+  color: #374151;
+}
+
+/* 首尾元素去除多余外边距，让内容与气泡内边距贴合 */
+.ai-markdown.markdown-body > *:first-child {
+  margin-top: 0 !important;
+}
+.ai-markdown.markdown-body > *:last-child {
+  margin-bottom: 0 !important;
+}
+.ai-markdown.markdown-body p {
+  margin-bottom: 10px;
+}
+
+/* 代码块、引用、表格等元素柔化，与浅色气泡协调 */
+.ai-markdown.markdown-body pre {
+  background-color: rgba(148, 163, 184, 0.12);
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+}
+.ai-markdown.markdown-body code {
+  background-color: rgba(148, 163, 184, 0.18);
+  border-radius: 6px;
+  padding: 0.15em 0.4em;
+  color: #334155;
+}
+.ai-markdown.markdown-body pre code {
+  background-color: transparent;
+  padding: 0;
+}
+.ai-markdown.markdown-body blockquote {
+  color: #4b5563;
+  border-left: 0.25em solid #cbd5e1;
+  background-color: rgba(148, 163, 184, 0.08);
+  padding: 8px 14px;
+  border-radius: 0 8px 8px 0;
+}
+.ai-markdown.markdown-body table tr {
+  background-color: transparent;
+}
+.ai-markdown.markdown-body table tr:nth-child(2n) {
+  background-color: rgba(148, 163, 184, 0.1);
+}
+.ai-markdown.markdown-body hr {
+  background-color: #e5e7eb;
+}
+.ai-markdown.markdown-body a {
+  color: #2563eb;
+}
+</style>

@@ -333,7 +333,7 @@ onMounted(async () => {
                   :message_id="item.id"
                   :suggested_questions="item.id === message_id ? suggested_questions : []"
                   :total_token_count="item.total_token_count"
-                  message_class="bg-white"
+                  message_class="bg-slate-50"
                   @select-suggested-question="handleSubmitQuestion"
                 />
               </div>

@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { onMounted, ref } from 'vue'
 import hljs from 'highlight.js/lib/common'
-import 'highlight.js/styles/github-dark.css'
+import 'highlight.js/styles/github.css'
 
 // 1.定义自定义组件所需数据
 const props = defineProps({
