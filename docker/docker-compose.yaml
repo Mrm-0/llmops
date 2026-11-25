@@ -44,7 +44,7 @@ services:
       SQLALCHEMY_DATABASE_URI: postgresql+psycopg://postgres:${POSTGRES_PASSWORD:-llmops123456}@llmops-db:5432/llmops?client_encoding=utf8
       SQLALCHEMY_POOL_SIZE: 5
       SQLALCHEMY_POOL_RECYCLE: 3600
-      SQLALCHEMY_ECHO: 'true'
+      SQLALCHEMY_ECHO: 'false'
       # Redis缓存数据库配置
       REDIS_HOST: llmops-redis
       REDIS_PORT: 6379
@@ -139,7 +139,7 @@ services:
       SQLALCHEMY_DATABASE_URI: postgresql+psycopg://postgres:${POSTGRES_PASSWORD:-llmops123456}@llmops-db:5432/llmops?client_encoding=utf8
       SQLALCHEMY_POOL_SIZE: 5
       SQLALCHEMY_POOL_RECYCLE: 3600
-      SQLALCHEMY_ECHO: 'true'
+      SQLALCHEMY_ECHO: 'false'
       # Redis缓存数据库配置
       REDIS_HOST: llmops-redis
       REDIS_PORT: 6379
