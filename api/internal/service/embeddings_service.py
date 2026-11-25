@@ -65,7 +65,8 @@ class EmbeddingsService:
             self._embeddings,
             self._store,
             namespace="embeddings",
-            key_encoder="sha-256",
+            # 注意：langchain的key_encoder只接受"sha256"（不带横线），带横线会抛Unsupported algorithm
+            key_encoder="sha256",
         )
 
     @classmethod

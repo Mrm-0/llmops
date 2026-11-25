@@ -352,14 +352,22 @@ class IndexingService(BaseService):
                         "completed_at": datetime.now(),
                         "enabled": True,
                     })
+            # 3.全部片段索引成功，更新文档状态为完成
+            self.update(
+                document,
+                status=DocumentStatus.COMPLETED,
+                completed_at=datetime.now(),
+                enabled=True,
+            )
         except Exception as e:
             logging.exception(
                 "构建文档片段索引发生异常, 错误信息: %(error)s",
                 {"error": e},
             )
+            # 4.索引失败：将已提交待写入的片段标记为error，并将文档状态标记为error
             with self.db.auto_commit():
                 self.db.session.query(Segment).filter(
-                    Segment.node_id.in_(ids)
+                    Segment.document_id == document.id
                 ).update({
                     "status": SegmentStatus.ERROR,
                     "completed_at": None,
@@ -367,14 +375,7 @@ class IndexingService(BaseService):
                     "enabled": False,
                     "error": str(e),
                 })
-
-        # 6.更新文档的状态数据
-        self.update(
-            document,
-            status=DocumentStatus.COMPLETED,
-            completed_at=datetime.now(),
-            enabled=True,
-        )
+            self.update(document, status=DocumentStatus.ERROR)
 
     @classmethod
     def _clean_extra_text(cls, text: str) -> str:
