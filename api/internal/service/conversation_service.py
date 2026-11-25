@@ -243,11 +243,13 @@ class ConversationService(BaseService):
                         ).start()
 
             # 11.检测事件是否为停止或者错误，如果是则需要更新消息状态
+            #    注意：Message模型上没有observation字段（observation属于MessageAgentThought），
+            #    错误信息对应的是Message.error；只有ERROR事件才记录错误详情，STOP/TIMEOUT为空
             if agent_thought.event in [QueueEvent.TIMEOUT, QueueEvent.ERROR, QueueEvent.STOP]:
                 self.update(
                     message,
                     status=MessageStatus.STOP if agent_thought.event == QueueEvent.STOP else MessageStatus.ERROR,
-                    observation=agent_thought.observation,
+                    error=agent_thought.observation if agent_thought.event == QueueEvent.ERROR else "",
                 )
                 break
 
