@@ -21,6 +21,9 @@ services:
       # 模型文件不进镜像（api/.dockerignore 已排除 models/），运行时从宿主机只读挂载
       # 部署前确保仓库 api/models/bge-m3 目录已存在（可先运行 api/download_model.py 下载）
       - ../api/models:/app/api/models:ro
+      # 本地FAISS索引目录挂载到宿主机：索引是"数据"不是"代码"，
+      # 挂在容器里的话 up -d --build 后会丢失；挂载后由宿主机持久保存
+      - ../api/internal/core/vector_store:/app/api/internal/core/vector_store
     environment:
       # 模式为API，代表启用API服务
       MODE: api
@@ -114,6 +117,9 @@ services:
       # 模型文件不进镜像（api/.dockerignore 已排除 models/），运行时从宿主机只读挂载
       # 部署前确保仓库 api/models/bge-m3 目录已存在（可先运行 api/download_model.py 下载）
       - ../api/models:/app/api/models:ro
+      # 本地FAISS索引目录挂载到宿主机：索引是"数据"不是"代码"，
+      # 挂在容器里的话 up -d --build 后会丢失；挂载后由宿主机持久保存
+      - ../api/internal/core/vector_store:/app/api/internal/core/vector_store
     environment:
       # 模式为celery，代表启用Celery异步任务队列
       MODE: celery
