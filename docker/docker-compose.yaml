@@ -36,7 +36,9 @@ services:
       # CSRF校验开关
       WTF_CSRF_ENABLED: 'false'
       # SQLAlchemy数据库配置
-      SQLALCHEMY_DATABASE_URI: postgresql+psycopg2://postgres:${POSTGRES_PASSWORD:-llmops123456}@llmops-db:5432/llmops?client_encoding=utf8
+      # 驱动方言必须是 psycopg（psycopg3）：requirements.txt 装的是 psycopg[binary]==3.3.9
+      # 注意：不是 psycopg2（未安装），也不是裸 postgresql://（sqlalchemy 2.1 默认解析会依赖 psycopg3，但显式写更稳）
+      SQLALCHEMY_DATABASE_URI: postgresql+psycopg://postgres:${POSTGRES_PASSWORD:-llmops123456}@llmops-db:5432/llmops?client_encoding=utf8
       SQLALCHEMY_POOL_SIZE: 5
       SQLALCHEMY_POOL_RECYCLE: 3600
       SQLALCHEMY_ECHO: 'true'
@@ -103,10 +105,8 @@ services:
       llmops-weaviate:
         condition: service_started
   llmops-celery:
+    # 与 llmops-api 共用同一个镜像，不再单独 build（省一半磁盘空间和构建时间）
     image: llmops-api:0.1.0
-    build:
-      context: ../api
-      dockerfile: Dockerfile
     container_name: llmops-celery
     restart: always
     volumes:
@@ -128,7 +128,9 @@ services:
       # CSRF校验开关
       WTF_CSRF_ENABLED: 'false'
       # SQLAlchemy数据库配置
-      SQLALCHEMY_DATABASE_URI: postgresql+psycopg2://postgres:${POSTGRES_PASSWORD:-llmops123456}@llmops-db:5432/llmops?client_encoding=utf8
+      # 驱动方言必须是 psycopg（psycopg3）：requirements.txt 装的是 psycopg[binary]==3.3.9
+      # 注意：不是 psycopg2（未安装），也不是裸 postgresql://（sqlalchemy 2.1 默认解析会依赖 psycopg3，但显式写更稳）
+      SQLALCHEMY_DATABASE_URI: postgresql+psycopg://postgres:${POSTGRES_PASSWORD:-llmops123456}@llmops-db:5432/llmops?client_encoding=utf8
       SQLALCHEMY_POOL_SIZE: 5
       SQLALCHEMY_POOL_RECYCLE: 3600
       SQLALCHEMY_ECHO: 'true'
