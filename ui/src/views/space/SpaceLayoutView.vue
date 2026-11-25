@@ -79,28 +79,28 @@ watch(
         <div class="flex items-center gap-2">
           <router-link
             to="/space/apps"
-            class="rounded-lg text-gray-700 px-3 h-8 leading-8 hover:bg-gray-200 transition-all"
+            class="shrink-0 whitespace-nowrap rounded-lg text-gray-700 px-3 h-8 leading-8 hover:bg-gray-200 transition-all"
             active-class="bg-gray-100"
           >
             AI应用
           </router-link>
           <router-link
             to="/space/tools"
-            class="rounded-lg text-gray-700 px-3 h-8 leading-8 hover:bg-gray-200 transition-all"
+            class="shrink-0 whitespace-nowrap rounded-lg text-gray-700 px-3 h-8 leading-8 hover:bg-gray-200 transition-all"
             active-class="bg-gray-100"
           >
             插件
           </router-link>
           <router-link
             to="/space/workflows"
-            class="rounded-lg text-gray-700 px-3 h-8 leading-8 hover:bg-gray-200 transition-all"
+            class="shrink-0 whitespace-nowrap rounded-lg text-gray-700 px-3 h-8 leading-8 hover:bg-gray-200 transition-all"
             active-class="bg-gray-100"
           >
             工作流
           </router-link>
           <router-link
             to="/space/datasets"
-            class="rounded-lg text-gray-700 px-3 h-8 leading-8 hover:bg-gray-200 transition-all"
+            class="shrink-0 whitespace-nowrap rounded-lg text-gray-700 px-3 h-8 leading-8 hover:bg-gray-200 transition-all"
             active-class="bg-gray-100"
           >
             知识库
@@ -110,7 +110,8 @@ watch(
         <a-input-search
           v-model="searchWord"
           placeholder="输入关键词进行搜索"
-          class="w-[240px] bg-white rounded-lg border-gray-300"
+          class="bg-white rounded-lg border-gray-300"
+          style="width: 240px"
           @search="search"
         />
       </div>

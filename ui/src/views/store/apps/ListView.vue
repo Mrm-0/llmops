@@ -67,7 +67,8 @@ onMounted(() => {
         <!-- 右侧搜索 -->
         <a-input-search
           v-model="search_word"
-          class="w-[240px] bg-white rounded-lg border-gray-300"
+          class="bg-white rounded-lg border-gray-300"
+          style="width: 240px"
           placeholder="请输入应用名称"
         />
       </div>
@@ -113,7 +114,7 @@ onMounted(() => {
                 <icon-user />
               </a-avatar>
               <div class="text-xs text-gray-400">
-                慕课 · 发布时间
+                官方 · 发布时间
                 {{ moment(app.created_at * 1000).format('MM-DD HH:mm') }}
               </div>
             </div>

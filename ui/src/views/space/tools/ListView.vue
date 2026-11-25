@@ -13,10 +13,12 @@ import { useUploadImage } from '@/hooks/use-upload-file'
 import { type CreateApiToolProviderRequest } from '@/models/api-tool'
 import moment from 'moment/moment'
 import { typeMap } from '@/config'
+import { useAccountStore } from '@/stores/account'
 import { type FileItem, Form, type ValidatedError } from '@arco-design/web-vue'
 
 // 1.定义额面所需数据
 const route = useRoute()
+const accountStore = useAccountStore()
 const props = defineProps({
   createType: { type: String, required: true }
 })
@@ -235,7 +237,7 @@ watch(
               <icon-user />
             </a-avatar>
             <div class="text-xs text-gray-400">
-              慕小课 · 编辑时间
+              {{ accountStore.account.name || '未知用户' }} · 编辑时间
               {{ moment(provider.created_at * 1000).format('MM-DD HH:mm') }}
             </div>
           </div>

@@ -10,9 +10,11 @@ import {
   useGetDatasetsWithPage,
 } from '@/hooks/use-dataset'
 import { useUploadImage } from '@/hooks/use-upload-file'
+import { useAccountStore } from '@/stores/account'
 
 // 1.定义页面所需数据
 const route = useRoute()
+const accountStore = useAccountStore()
 const props = defineProps({
   createType: { type: String, required: true },
 })
@@ -160,7 +162,7 @@ onMounted(() => {
               <icon-user />
             </a-avatar>
             <div class="text-xs text-gray-400">
-              慕小课 · 最近编辑
+              {{ accountStore.account.name || '未知用户' }} · 最近编辑
               {{ moment(dataset.created_at * 1000).format('MM-DD HH:mm') }}
             </div>
           </div>

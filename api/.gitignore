@@ -1,6 +1,6 @@
 .env
 tmp/*
-storage/log
+storage/logs
 storage/memory
 .idea/*
 venv/*
