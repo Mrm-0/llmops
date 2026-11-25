@@ -79,29 +79,29 @@ watch(
         <div class="flex items-center gap-2">
           <router-link
             to="/space/apps"
-            class="shrink-0 whitespace-nowrap rounded-lg text-gray-700 px-3 h-8 leading-8 hover:bg-gray-200 transition-all"
-            active-class="bg-gray-100"
+            class="shrink-0 whitespace-nowrap rounded-lg text-gray-700 px-3 h-8 leading-8 hover:bg-gray-100 transition-all"
+            active-class="bg-blue-50 text-blue-700 font-medium"
           >
             AI应用
           </router-link>
           <router-link
             to="/space/tools"
-            class="shrink-0 whitespace-nowrap rounded-lg text-gray-700 px-3 h-8 leading-8 hover:bg-gray-200 transition-all"
-            active-class="bg-gray-100"
+            class="shrink-0 whitespace-nowrap rounded-lg text-gray-700 px-3 h-8 leading-8 hover:bg-gray-100 transition-all"
+            active-class="bg-blue-50 text-blue-700 font-medium"
           >
             插件
           </router-link>
           <router-link
             to="/space/workflows"
-            class="shrink-0 whitespace-nowrap rounded-lg text-gray-700 px-3 h-8 leading-8 hover:bg-gray-200 transition-all"
-            active-class="bg-gray-100"
+            class="shrink-0 whitespace-nowrap rounded-lg text-gray-700 px-3 h-8 leading-8 hover:bg-gray-100 transition-all"
+            active-class="bg-blue-50 text-blue-700 font-medium"
           >
             工作流
           </router-link>
           <router-link
             to="/space/datasets"
-            class="shrink-0 whitespace-nowrap rounded-lg text-gray-700 px-3 h-8 leading-8 hover:bg-gray-200 transition-all"
-            active-class="bg-gray-100"
+            class="shrink-0 whitespace-nowrap rounded-lg text-gray-700 px-3 h-8 leading-8 hover:bg-gray-100 transition-all"
+            active-class="bg-blue-50 text-blue-700 font-medium"
           >
             知识库
           </router-link>

@@ -687,3 +687,17 @@ zstandard==0.25.0
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
+
+# ---- 手动追加：文档解析依赖（file_extractor所需） ----
+docx2txt==0.9
+    # via -r requirements.in (Docx2txtLoader)
+python-docx==1.2.0
+    # via -r requirements.in (docx解析兜底)
+openpyxl==3.1.5
+    # via -r requirements.in (UnstructuredExcelLoader)
+python-pptx==1.0.2
+    # via -r requirements.in (UnstructuredPowerPointLoader)
+pillow==12.1.1
+    # via -r requirements.in (python-pptx依赖)
+xlrd==2.0.2
+    # via -r requirements.in (旧版.xls解析)

@@ -62,6 +62,13 @@ cos-python-sdk-v5
 
 # 文件解析
 unstructured[md]
+# Office文档解析（unstructured[md]不含这些extra，Docx2txtLoader/Excel/PPT加载器必需）
+docx2txt
+python-docx
+openpyxl
+xlrd
+python-pptx
+pillow
 
 # 内置工具
 wikipedia

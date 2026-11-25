@@ -89,7 +89,8 @@ onMounted(() => {
       <!-- 左侧搜索框 -->
       <a-input-search
         :default-value="route.query?.search_word || ''"
-        class="w-[240px] bg-white rounded-lg border-gray-200"
+        class="bg-white rounded-lg border-gray-200"
+        style="width: 240px"
         placeholder="请输入关键词搜索文档"
         @search="
           (value: string) => {

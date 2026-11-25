@@ -13,6 +13,73 @@
 
   html,
   body {
-    @apply min-h-[600px] min-w-[1200px] h-full w-full;
+    @apply min-h-[600px] min-w-[1200px] h-full w-full antialiased;
   }
+}
+
+/* ====== 全局视觉优化 ====== */
+
+/* 文字选中色 */
+::selection {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+/* 全局细滚动条（.scrollbar-w-none 处保持隐藏） */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d4d8de;
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #b6bcc5;
+}
+
+/* 卡片悬浮上浮效果 */
+.arco-card {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.arco-card-hoverable {
+  border: 1px solid #e5e7eb;
+}
+
+.arco-card-hoverable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.09);
+  border-color: #dbeafe;
+}
+
+/* 按钮/输入框/下拉统一圆角 */
+.arco-btn {
+  border-radius: 8px;
+}
+
+.arco-input-wrapper,
+.arco-textarea-wrapper,
+.arco-select-view-single,
+.arco-select-view-multiple {
+  border-radius: 8px;
+}
+
+/* 模态窗与抽屉圆角更柔和 */
+.arco-modal,
+.arco-drawer {
+  border-radius: 12px;
+}
+
+/* 空状态更轻盈 */
+.arco-empty {
+  opacity: 0.75;
 }

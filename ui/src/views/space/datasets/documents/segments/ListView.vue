@@ -121,7 +121,8 @@ onMounted(() => {
         <a-input-search
           :default-value="route.query?.search_word || ''"
           placeholder="请输入关键词搜索片段"
-          class="w-[240px] bg-white rounded-lg border-gray-200"
+          class="bg-white rounded-lg border-gray-200"
+          style="width: 240px"
           @search="
             (value: string) => {
               router.push({
@@ -134,7 +135,7 @@ onMounted(() => {
         <!-- 右侧功能区 -->
         <a-space :size="12">
           <div
-            class="flex items-center gap-2 h-8 leading-8 bg-white rounded-lg px-3 text-gray-700 border"
+            class="flex items-center gap-2 h-8 leading-8 bg-white rounded-lg px-3 text-gray-700 border shrink-0 whitespace-nowrap"
           >
             <div
               v-if="document.enabled"

@@ -18,8 +18,8 @@ const route = useRoute()
 <template>
   <div class="flex flex-col gap-2">
     <router-link
-      active-class="bg-gray-100"
-      class="flex items-center gap-2 h-8 leading-8 rounded-lg transition-all px-2 text-gray-700 hover:text-gray-900 hover:bg-gray-200"
+      active-class="bg-blue-50 text-blue-700 font-medium"
+      class="flex items-center gap-2 h-8 leading-8 rounded-lg transition-all px-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100"
       to="/home"
     >
       <icon-home-full v-if="route.path.startsWith('/home')" />
@@ -27,7 +27,7 @@ const route = useRoute()
       主页
     </router-link>
     <router-link
-      :class="`flex items-center gap-2 h-8 leading-8 rounded-lg transition-all px-2 text-gray-700 hover:text-gray-900 hover:bg-gray-200 ${route.path.startsWith('/space') ? 'bg-gray-100' : ''}`"
+      :class="`flex items-center gap-2 h-8 leading-8 rounded-lg transition-all px-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 ${route.path.startsWith('/space') ? 'bg-blue-50 text-blue-700 font-medium' : ''}`"
       to="/space/apps"
     >
       <icon-space-full v-if="route.path.startsWith('/space')" />
@@ -36,8 +36,8 @@ const route = useRoute()
     </router-link>
     <div class="text-gray-500 text-sm px-2">探索</div>
     <router-link
-      active-class="bg-gray-100"
-      class="flex items-center gap-2 h-8 leading-8 rounded-lg transition-all px-2 text-gray-700 hover:text-gray-900 hover:bg-gray-200"
+      active-class="bg-blue-50 text-blue-700 font-medium"
+      class="flex items-center gap-2 h-8 leading-8 rounded-lg transition-all px-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100"
       to="/store/apps"
     >
       <icon-app-full v-if="route.path.startsWith('/store/apps')" />
@@ -45,8 +45,8 @@ const route = useRoute()
       应用广场
     </router-link>
     <router-link
-      active-class="bg-gray-100"
-      class="flex items-center gap-2 h-8 leading-8 rounded-lg transition-all px-2 text-gray-700 hover:text-gray-900 hover:bg-gray-200"
+      active-class="bg-blue-50 text-blue-700 font-medium"
+      class="flex items-center gap-2 h-8 leading-8 rounded-lg transition-all px-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100"
       to="/store/tools"
     >
       <icon-tool-full v-if="route.path.startsWith('/store/tools')" />
@@ -54,8 +54,8 @@ const route = useRoute()
       插件广场
     </router-link>
     <router-link
-      active-class="bg-gray-100"
-      class="flex items-center gap-2 h-8 leading-8 rounded-lg transition-all px-2 text-gray-700 hover:text-gray-900 hover:bg-gray-200"
+      active-class="bg-blue-50 text-blue-700 font-medium"
+      class="flex items-center gap-2 h-8 leading-8 rounded-lg transition-all px-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100"
       to="/openapi"
     >
       <icon-open-api-full v-if="route.path.startsWith('/openapi')" />

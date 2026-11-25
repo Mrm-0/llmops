@@ -40,14 +40,16 @@ onMounted(async () => {
   <a-layout has-sider class="h-full">
     <!-- 侧边栏 -->
     <a-layout-sider :width="240" class="min-h-screen bg-gray-50 p-2 shadow-none">
-      <div class="bg-white h-full rounded-lg px-2 py-4 flex flex-col justify-between">
+      <div class="bg-white h-full rounded-lg px-2 py-4 flex flex-col justify-between shadow-sm border border-gray-100">
         <!-- 上半部分 -->
         <div class="">
           <!-- 顶部Logo -->
-          <router-link
-            to="/home"
-            class="block h-9 w-[110px] mb-5 bg-gray-200 hover:bg-gray-300 transition-all rounded-lg"
-          />
+          <router-link to="/home" class="flex items-center gap-2 mb-5 px-2 group">
+            <a-avatar :size="30" shape="square" class="bg-blue-700 rounded-lg group-hover:scale-105 transition-transform">
+              <icon-apps :size="18" />
+            </a-avatar>
+            <span class="font-bold text-gray-900 text-[15px] tracking-tight">LLMOps AppBuilder</span>
+          </router-link>
           <!-- 创建AI应用按钮 -->
           <router-link :to="{ name: 'space-apps-list', query: { create_type: 'app' } }">
             <a-button class="rounded-lg mb-4" long type="primary">
@@ -97,7 +99,7 @@ onMounted(async () => {
       </div>
     </a-layout-sider>
     <!-- 右侧内容 -->
-    <a-layout-content>
+    <a-layout-content class="bg-gradient-to-br from-gray-50 to-blue-50/40">
       <router-view />
     </a-layout-content>
     <!-- 设置模态窗 -->

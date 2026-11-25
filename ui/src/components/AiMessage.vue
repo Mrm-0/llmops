@@ -61,13 +61,13 @@ const compiledMarkdown = computed(() => {
       <!-- AI消息 -->
       <div
         v-if="props.loading && props.answer.trim() === ''"
-        :class="`${props.message_class} border border-gray-200 text-gray-700 px-4 py-3 rounded-2xl break-all`"
+        :class="`${props.message_class} border border-blue-100 shadow-sm text-gray-700 px-4 py-3 rounded-2xl break-all`"
       >
         <dot-flashing />
       </div>
       <div
         v-else
-        :class="`${props.message_class} markdown-body border border-gray-200 text-gray-700 px-4 py-3 rounded-2xl break-all`"
+        :class="`${props.message_class} markdown-body border border-blue-100 shadow-sm text-gray-700 px-4 py-3 rounded-2xl break-all`"
         v-html="compiledMarkdown"
       ></div>
       <!-- 消息展示与操作 -->
