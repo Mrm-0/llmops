@@ -22,7 +22,13 @@ const githubLogin = async () => {
   // 3.1 调用处理器获取提供者重定向地址
   await handleProvider('github')
 
-  // 3.2 跳转到重定向地址
+  // 3.2 防御：接口若未返回有效地址（字段名不匹配/请求失败），不要跳转到 undefined
+  if (!redirect_url.value) {
+    Message.error('获取 GitHub 授权地址失败，请稍后重试')
+    return
+  }
+
+  // 3.3 跳转到重定向地址
   window.location.href = redirect_url.value
 }
 

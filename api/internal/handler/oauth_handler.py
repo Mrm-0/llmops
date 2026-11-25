@@ -28,7 +28,10 @@ class OAuthHandler:
         # 2.调用类函数获取地址
         redirect_uri = oauth.get_authorization_url()
 
-        return success_json({"redirect_uri": redirect_uri})
+        # 3.返回给前端时字段名必须是 redirect_url（与前端 use-oauth.ts / models/oauth.ts 保持一致，
+        # 前端读的是 resp.data.redirect_url）。写成 redirect_uri 会导致前端拿到 undefined，
+        # window.location.href = undefined，表现为点击第三方登录"没有任何反应"
+        return success_json({"redirect_url": redirect_uri})
 
     def authorize(self, provider_name: str):
         """根据传递的提供商名字+code获取第三方授权信息"""
