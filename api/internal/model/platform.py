@@ -31,7 +31,7 @@ class WechatConfig(db.Model):
         Index("wechat_config_app_id_idx", "app_id"),
     )
 
-    id = Column(UUID, nullable=False, server_default=text("uuid_generate_v4()"))  # 配置id
+    id = Column(UUID, nullable=False, server_default=text("gen_random_uuid()"))  # 配置id
     app_id = Column(UUID, nullable=False)  # 配置关联应用id
     wechat_app_id = Column(String(255), nullable=True, server_default=text("''::character varying"))  # 微信公众号开发者id
     wechat_app_secret = Column(String(255), nullable=True, server_default=text("''::character varying"))  # 微信公众号开发者秘钥
@@ -54,7 +54,7 @@ class WechatEndUser(db.Model):
         Index("wechat_end_user_openid_app_id_idx", "openid", "app_id"),
     )
 
-    id = Column(UUID, nullable=False, server_default=text("uuid_generate_v4()"))  # 记录id
+    id = Column(UUID, nullable=False, server_default=text("gen_random_uuid()"))  # 记录id
     openid = Column(String, nullable=False)  # 发送方账号，数据其实是openid(FromUserName/source)
     app_id = Column(UUID, nullable=False)  # 关联配置的应用id
     end_user_id = Column(UUID, nullable=False)  # 关联的终端用户id
@@ -98,7 +98,7 @@ class WechatMessage(db.Model):
         Index("wechat_message_wechat_end_user_id_idx", "wechat_end_user_id"),
     )
 
-    id = Column(UUID, nullable=False, server_default=text("uuid_generate_v4()"))  # 记录id
+    id = Column(UUID, nullable=False, server_default=text("gen_random_uuid()"))  # 记录id
     wechat_end_user_id = Column(UUID, nullable=False)  # 关联的微信终端用户id
     message_id = Column(UUID, nullable=False)  # 关联的消息id
     is_pushed = Column(Boolean, nullable=False, server_default=text("false"))  # 是否推送，默认为false表示未推送

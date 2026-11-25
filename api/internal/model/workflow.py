@@ -63,7 +63,7 @@ class WorkflowResult(db.Model):
         Index("workflow_result_workflow_id_idx", "workflow_id"),
     )
 
-    id = Column(UUID, nullable=False, server_default=text("uuid_generate_v4()"))  # 结果id
+    id = Column(UUID, nullable=False, server_default=text("gen_random_uuid()"))  # 结果id
     app_id = Column(UUID, nullable=True)  # 工作流调用的应用id，如果为空则代表非应用调用
     account_id = Column(UUID, nullable=False)  # 创建账号id
     workflow_id = Column(UUID, nullable=False)  # 结果关联的工作流id
