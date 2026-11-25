@@ -5,7 +5,9 @@
 @Author   :314907015@qq.com
 @File     :faiss_service.py
 """
+import logging
 from pathlib import Path
+from typing import Optional
 
 from injector import inject
 from langchain_community.vectorstores import FAISS
@@ -37,11 +39,16 @@ class FaissService:
         self._faiss: FAISS | None = None
 
     @property
+    def is_available(self) -> bool:
+        """判断本地FAISS索引是否可用（索引文件是否已生成）"""
+        return (self._faiss_vector_store_path / "index.faiss").exists()
+
+    @property
     def faiss(self) -> FAISS:
         """惰性加载FAISS索引：首次访问时才从磁盘读取"""
         if self._faiss is None:
             # 校验索引文件是否存在，不存在则给出明确的错误提示
-            if not (self._faiss_vector_store_path / "index.faiss").exists():
+            if not self.is_available:
                 raise FileNotFoundError(
                     f"FAISS索引不存在：{self._faiss_vector_store_path}，"
                     f"请先创建知识库并完成文档索引后再使用知识库检索功能"
@@ -53,8 +60,19 @@ class FaissService:
             )
         return self._faiss
 
-    def convert_faiss_to_tool(self) -> BaseTool:
-        """将Faiss向量数据库检索器转换成LangChain工具"""
+    def convert_faiss_to_tool(self) -> Optional[BaseTool]:
+        """将Faiss向量数据库检索器转换成LangChain工具
+
+        本地FAISS索引不存在时（例如全新部署、尚未构建本地索引），
+        返回None而不是抛异常，由调用方跳过该工具，避免整个Agent不可用。
+        """
+        if not self.is_available:
+            logging.getLogger(__name__).warning(
+                "FAISS索引不存在（%s），本次跳过知识库检索工具",
+                self._faiss_vector_store_path,
+            )
+            return None
+
         # 1.将Faiss向量数据库转换成检索器
         retrieval = self.faiss.as_retriever(
             search_type="mmr",

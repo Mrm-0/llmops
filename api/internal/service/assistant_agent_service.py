@@ -80,10 +80,12 @@ class AssistantAgentService(BaseService):
         history = token_buffer_memory.get_history_prompt_messages(message_limit=3)
 
         # 6.将草稿配置中的tools转换成LangChain工具
+        #   注意：本地FAISS索引未构建时convert_faiss_to_tool会返回None，需过滤掉
         tools = [
             self.faiss_service.convert_faiss_to_tool(),
             self.convert_create_app_to_tool(account.id),
         ]
+        tools = [tool_item for tool_item in tools if tool_item is not None]
 
         # 7.构建Agent智能体，使用FunctionCallAgent
         agent = FunctionCallAgent(
