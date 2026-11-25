@@ -14,6 +14,7 @@ from injector import inject
 from sqlalchemy import desc
 
 from internal.core.tools.api_tools.entities import OpenAPISchema
+from internal.core.tools.api_tools.providers import ApiProviderManager
 from internal.exception import ValidateErrorException, NotFoundException
 from internal.model import ApiToolProvider, ApiTool, Account
 from internal.schema.api_tool_schema import (
@@ -24,7 +25,6 @@ from internal.schema.api_tool_schema import (
 from pkg.paginator import Paginator
 from pkg.sqlalchemy import SQLAlchemy
 from .base_service import BaseService
-from ..core.tools.api_tools.providers import ApiProviderManager
 
 
 @inject

@@ -5,6 +5,8 @@
 @Author   :314907015@qq.com
 @File     :api_key.py
 """
+from datetime import datetime
+
 from sqlalchemy import (
     PrimaryKeyConstraint,
     Column,
@@ -38,15 +40,17 @@ class ApiKey(db.Model):
         DateTime,
         nullable=False,
         server_default=text("CURRENT_TIMESTAMP(0)"),
-        server_onupdate=text("CURRENT_TIMESTAMP(0)"),
+        default=datetime.now,
+        onupdate=datetime.now,
     )
     created_at = Column(
         DateTime,
         nullable=False,
         server_default=text("CURRENT_TIMESTAMP(0)"),
+        default=datetime.now,
     )
 
     @property
     def account(self) -> "Account":
         """只读属性，返回该密钥归属的账号信息"""
-        return db.session.query(Account).get(self.account_id)
+        return db.session.get(Account, self.account_id)

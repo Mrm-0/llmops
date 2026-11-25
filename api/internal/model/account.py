@@ -7,6 +7,8 @@
 """
 from flask import current_app
 from flask_login import UserMixin
+from datetime import datetime
+
 from sqlalchemy import (
     Column,
     UUID,
@@ -43,12 +45,14 @@ class Account(UserMixin, db.Model):
         DateTime,
         nullable=False,
         server_default=text("CURRENT_TIMESTAMP(0)"),
-        server_onupdate=text("CURRENT_TIMESTAMP(0)"),
+        default=datetime.now,
+        onupdate=datetime.now,
     )
     created_at = Column(
         DateTime,
         nullable=False,
         server_default=text("CURRENT_TIMESTAMP(0)"),
+        default=datetime.now,
     )
 
     @property
@@ -102,10 +106,12 @@ class AccountOAuth(db.Model):
         DateTime,
         nullable=False,
         server_default=text("CURRENT_TIMESTAMP(0)"),
-        server_onupdate=text("CURRENT_TIMESTAMP(0)"),
+        default=datetime.now,
+        onupdate=datetime.now,
     )
     created_at = Column(
         DateTime,
         nullable=False,
         server_default=text("CURRENT_TIMESTAMP(0)"),
+        default=datetime.now,
     )

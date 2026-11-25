@@ -5,6 +5,8 @@
 @Author   :314907015@qq.com
 @File     :app.py
 """
+from datetime import datetime
+
 from sqlalchemy import (
     Column,
     UUID,
@@ -19,9 +21,11 @@ from sqlalchemy.dialects.postgresql import JSONB
 
 from internal.entity.app_entity import DEFAULT_APP_CONFIG, AppConfigType, AppStatus
 from internal.entity.conversation_entity import InvokeFrom
+from internal.entity.platform_entity import WechatConfigStatus
 from internal.extension.database_extension import db
 from internal.lib.helper import generate_random_string
 from .conversation import Conversation
+from .platform import WechatConfig
 
 
 class App(db.Model):
@@ -47,12 +51,14 @@ class App(db.Model):
         DateTime,
         nullable=False,
         server_default=text("CURRENT_TIMESTAMP(0)"),
-        server_onupdate=text("CURRENT_TIMESTAMP(0)"),
+        default=datetime.now,
+        onupdate=datetime.now,
     )
     created_at = Column(
         DateTime,
         nullable=False,
         server_default=text("CURRENT_TIMESTAMP(0)"),
+        default=datetime.now,
     )
 
     @property
@@ -120,7 +126,7 @@ class App(db.Model):
         # 1.判断状态是否为已发布
         if self.status != AppStatus.PUBLISHED:
             # 2.非发布的情况下需要清空数据，并提交更新
-            if self.token is not None or self.token != "":
+            if self.token is not None and self.token != "":
                 self.token = None
                 db.session.commit()
             return ""
@@ -131,6 +137,41 @@ class App(db.Model):
             db.session.commit()
 
         return self.token
+
+    @property
+    def wechat_config(self) -> "WechatConfig":
+        """获取应用的微信发布配置信息"""
+        # 1.获取当前应用的微信配置信息
+        config = db.session.query(WechatConfig).filter(
+            WechatConfig.app_id == self.id,
+        ).one_or_none()
+
+        # 2.检测配置是否存在，不存在则创建
+        if not config:
+            config = WechatConfig(app_id=self.id, status=WechatConfigStatus.UNCONFIGURED)
+            db.session.add(config)
+            db.session.commit()
+
+        # 3.检查wechat_config只要app_id、app_secret和token有一个没填写则更新配置状态
+        if config.status == WechatConfigStatus.CONFIGURED:
+            if not config.wechat_app_id or not config.wechat_app_secret or not config.wechat_token:
+                config.status = WechatConfigStatus.UNCONFIGURED
+                db.session.commit()
+
+        # 4.检测应用发布状态与配置信息是否匹配，不匹配则更新
+        if self.status == AppStatus.DRAFT:
+            # 5.草稿配置，检查WechatConfig是否设置为已发布，是的话则更新
+            if config.status == WechatConfigStatus.CONFIGURED:
+                config.status = WechatConfigStatus.UNCONFIGURED
+                db.session.commit()
+        elif self.status == AppStatus.PUBLISHED:
+            # 6.已发布配置，检测WechatConfig如果填写了app_id、app_secret与token，则更新配置信息
+            if config.status == WechatConfigStatus.UNCONFIGURED:
+                if config.wechat_app_id and config.wechat_app_secret and config.wechat_token:
+                    config.status = WechatConfigStatus.CONFIGURED
+                    db.session.commit()
+
+        return config
 
 
 class AppConfig(db.Model):
@@ -154,17 +195,24 @@ class AppConfig(db.Model):
     opening_questions = Column(JSONB, nullable=False, server_default=text("'[]'::jsonb"))
     speech_to_text = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
     text_to_speech = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    suggested_after_answer = Column(
+        JSONB,
+        nullable=False,
+        server_default=text("'{\"enable\": true}'::jsonb"),
+    )  # 回答后生成建议问题
     review_config = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
     updated_at = Column(
         DateTime,
         nullable=False,
         server_default=text("CURRENT_TIMESTAMP(0)"),
-        server_onupdate=text("CURRENT_TIMESTAMP(0)"),
+        default=datetime.now,
+        onupdate=datetime.now,
     )
     created_at = Column(
         DateTime,
         nullable=False,
         server_default=text("CURRENT_TIMESTAMP(0)"),
+        default=datetime.now,
     )
 
     @property
@@ -199,6 +247,11 @@ class AppConfigVersion(db.Model):
     opening_questions = Column(JSONB, nullable=False, server_default=text("'[]'::jsonb"))
     speech_to_text = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
     text_to_speech = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    suggested_after_answer = Column(
+        JSONB,
+        nullable=False,
+        server_default=text("'{\"enable\": true}'::jsonb"),
+    )  # 回答后生成建议问题
     review_config = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
     version = Column(Integer, nullable=False, server_default=text("0"))
     config_type = Column(String(255), nullable=False, server_default=text("''::character varying"))
@@ -206,12 +259,14 @@ class AppConfigVersion(db.Model):
         DateTime,
         nullable=False,
         server_default=text("CURRENT_TIMESTAMP(0)"),
-        server_onupdate=text("CURRENT_TIMESTAMP(0)"),
+        default=datetime.now,
+        onupdate=datetime.now,
     )
     created_at = Column(
         DateTime,
         nullable=False,
         server_default=text("CURRENT_TIMESTAMP(0)"),
+        default=datetime.now,
     )
 
 
@@ -230,6 +285,7 @@ class AppDatasetJoin(db.Model):
         DateTime,
         nullable=False,
         server_default=text("CURRENT_TIMESTAMP(0)"),
-        server_onupdate=text("CURRENT_TIMESTAMP(0)")
+        default=datetime.now,
+        onupdate=datetime.now
     )
-    created_at = Column(DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP(0)"))
+    created_at = Column(DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP(0)"), default=datetime.now)

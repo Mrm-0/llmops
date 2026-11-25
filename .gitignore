@@ -30,3 +30,6 @@ docker/.env
 *.key
 # 前端本地环境变量
 ui/.env
+
+# 系统垃圾文件
+.DS_Store

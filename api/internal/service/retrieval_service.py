@@ -6,6 +6,7 @@
 @File     :retrieval_service.py
 """
 from dataclasses import dataclass
+from typing import Optional
 from uuid import UUID
 
 from flask import Flask
@@ -16,15 +17,15 @@ from langchain_core.tools import BaseTool, tool
 from pydantic import BaseModel, Field
 from sqlalchemy import update
 
+from internal.core.agent.entities.agent_entity import DATASET_RETRIEVAL_TOOL_NAME
 from internal.entity.dataset_entity import RetrievalStrategy, RetrievalSource
 from internal.exception import NotFoundException
-from internal.model import Dataset, DatasetQuery, Segment, Account
+from internal.lib.helper import combine_documents
+from internal.model import Dataset, DatasetQuery, Segment
 from pkg.sqlalchemy import SQLAlchemy
 from .base_service import BaseService
 from .jieba_service import JiebaService
 from .vector_database_service import VectorDatabaseService
-from ..core.agent.entities.agent_entity import DATASET_RETRIEVAL_TOOL_NAME
-from ..lib.helper import combine_documents
 
 
 @inject
@@ -44,6 +45,7 @@ class RetrievalService(BaseService):
             k: int = 4,
             score: float = 0,
             retrieval_source: str = RetrievalSource.HIT_TESTING,
+            source_app_id: Optional[UUID] = None,
     ) -> list[LCDocument]:
         """根据传递的query+知识库列表执行检索，并返回检索的文档+得分数据（如果执行策略为全文检索，则检索得分为0）"""
         # 1.提取知识库列表并校验权限，同时更新知识库id
@@ -94,8 +96,7 @@ class RetrievalService(BaseService):
                 dataset_id=dataset_id,
                 query=query,
                 source=retrieval_source,
-                # todo:等待APP配置模块完成后调整
-                source_app_id=None,
+                source_app_id=source_app_id,
                 created_by=account_id,
             )
 
@@ -112,13 +113,14 @@ class RetrievalService(BaseService):
 
     def create_langchain_tool_from_search(
             self,
-            flask_app:Flask,
+            flask_app: Flask,
             account_id: UUID,
             dataset_ids: list[UUID],
             retrieval_strategy: str = RetrievalStrategy.SEMANTIC,
             k: int = 4,
             score: float = 0,
             retrieval_source: str = RetrievalSource.HIT_TESTING,
+            source_app_id: Optional[UUID] = None,
     ) -> BaseTool:
         """根据传递的参数构建一个LangChain知识库检索工具"""
 
@@ -131,7 +133,7 @@ class RetrievalService(BaseService):
             """如果需要搜索扩展的知识库内容，当你觉得用户的提问超过你的知识库时，可以尝试调用该工具，输入搜索query语句，返回数据为检索内容字符串"""
             # 1.调用search_in_datasets检索得到LangChain文档列表
             with flask_app.app_context():
-                documents=self.search_in_datasets(
+                documents = self.search_in_datasets(
                     account_id=account_id,
                     dataset_ids=dataset_ids,
                     query=query,
@@ -139,6 +141,7 @@ class RetrievalService(BaseService):
                     k=k,
                     score=score,
                     retrieval_source=retrieval_source,
+                    source_app_id=source_app_id,
                 )
 
             # 2.将LangChain文档列表转换成字符串后返回

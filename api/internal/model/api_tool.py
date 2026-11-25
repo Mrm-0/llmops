@@ -7,6 +7,8 @@
 """
 from typing import List
 
+from datetime import datetime
+
 from sqlalchemy import (
     Column,
     UUID,
@@ -66,12 +68,14 @@ class ApiToolProvider(db.Model):
         DateTime,
         nullable=False,
         server_default=text("CURRENT_TIMESTAMP(0)"),
-        server_onupdate=text("CURRENT_TIMESTAMP(0)"),
+        default=datetime.now,
+        onupdate=datetime.now,
     )
     created_at = Column(
         DateTime,
         nullable=False,
         server_default=text("CURRENT_TIMESTAMP(0)"),
+        default=datetime.now,
     )
 
     @property
@@ -125,15 +129,17 @@ class ApiTool(db.Model):
         DateTime,
         nullable=False,
         server_default=text("CURRENT_TIMESTAMP(0)"),
-        server_onupdate=text("CURRENT_TIMESTAMP(0)"),
+        default=datetime.now,
+        onupdate=datetime.now,
     )
     created_at = Column(
         DateTime,
         nullable=False,
         server_default=text("CURRENT_TIMESTAMP(0)"),
+        default=datetime.now,
     )
 
     @property
     def provider(self) -> "ApiToolProvider":
         """只读属性，返回当前工具关联/归属的工具提供者信息"""
-        return db.session.query(ApiToolProvider).get(self.provider_id)
+        return db.session.get(ApiToolProvider, self.provider_id)

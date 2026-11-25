@@ -15,12 +15,12 @@ from uuid import UUID
 from flask import request
 from injector import inject
 
+from internal.exception import FailException
 from internal.model import Account, AccountOAuth
 from pkg.password import hash_password, compare_password
 from pkg.sqlalchemy import SQLAlchemy
 from .base_service import BaseService
 from .jwt_service import JwtService
-from ..exception import FailException
 
 
 @inject

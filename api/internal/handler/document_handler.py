@@ -63,7 +63,7 @@ class DocumentHandler:
         # 1.提出请求并校验数据
         req = UpdateDocumentNameReq()
         if not req.validate():
-            raise validate_error_json(req.errors)
+            return validate_error_json(req.errors)
 
         # 2.调用服务更新名称
         self.document_service.update_document(dataset_id, document_id, current_user, name=req.name.data)
@@ -76,7 +76,7 @@ class DocumentHandler:
         # 1.提取数据并校验
         req = UpdateDocumentEnabledReq()
         if not req.validate():
-            raise validate_error_json(req.errors)
+            return validate_error_json(req.errors)
 
         # 2.调用服务更新状态
         self.document_service.update_document_enabled(dataset_id, document_id, req.enabled.data, current_user)
@@ -89,7 +89,7 @@ class DocumentHandler:
         # 1.提取请求数据并校验
         req = GetDocumentsWithPageReq(request.args)
         if not req.validate():
-            raise validate_error_json(req.errors)
+            return validate_error_json(req.errors)
 
         # 2.调用服务获取文档分页列表和分页器
         documents, paginator = self.document_service.get_documents_with_page(dataset_id, req, current_user)

@@ -61,8 +61,16 @@ class BaseAgent(Serializable, Runnable):
             **kwargs: Any,
     ) -> AgentResult:
         """块内容响应，一次性生成完整内容后返回"""
-        # 1.调取stream方法获取流式事件输出数据
-        agent_result = AgentResult(query=input['messages'][0].content)
+        # 1.调用stream方法获取流式事件输出数据
+        content = input["messages"][0].content
+        query = ""
+        image_urls = []
+        if isinstance(content, str):
+            query = content
+        elif isinstance(content, list):
+            query = content[0]["text"]
+            image_urls = [chunk["image_url"]["url"] for chunk in content if chunk.get("type") == "image_url"]
+        agent_result = AgentResult(query=query, image_urls=image_urls)
         agent_thoughts = {}
         for agent_thought in self.stream(input, config):
             # 2.提取事件id并转换成字符串

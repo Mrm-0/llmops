@@ -66,7 +66,7 @@ class FunctionCallAgent(BaseAgent):
         # 2.检测是否开启审核配置
         if review_config['enable'] and review_config['inputs_config']['enable']:
             # 3.如果包含敏感词，则执行后续步骤
-            contains_keyword = any(keyword in query for keyword in review_config['inputs_config']['keywords'])
+            contains_keyword = any(keyword in query for keyword in review_config['keywords'])
             if contains_keyword:
                 preset_response = review_config['inputs_config']['preset_response']
                 self.agent_queue_manager.publish(state['task_id'], AgentThought(

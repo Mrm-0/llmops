@@ -16,9 +16,9 @@ from werkzeug.datastructures import FileStorage
 
 from internal.entity.upload_file_entity import ALLOWED_DOCUMENT_EXTENSIONS, ALLOWED_IMAGE_EXTENSIONS
 from internal.exception import FailException
+from internal.lib.helper import generate_text_hash
 from internal.model import UploadFile, Account
 from .upload_file_service import UploadFileService
-from ..lib.helper import generate_text_hash
 
 
 @inject

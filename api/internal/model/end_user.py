@@ -5,6 +5,8 @@
 @Author   :314907015@qq.com
 @File     :end_user.py
 """
+from datetime import datetime
+
 from sqlalchemy import (
     PrimaryKeyConstraint,
     Column,
@@ -32,10 +34,12 @@ class EndUser(db.Model):
         DateTime,
         nullable=False,
         server_default=text("CURRENT_TIMESTAMP(0)"),
-        server_onupdate=text("CURRENT_TIMESTAMP(0)"),
+        default=datetime.now,
+        onupdate=datetime.now,
     )
     created_at = Column(
         DateTime,
         nullable=False,
         server_default=text("CURRENT_TIMESTAMP(0)"),
+        default=datetime.now,
     )

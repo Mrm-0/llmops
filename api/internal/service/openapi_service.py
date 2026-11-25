@@ -11,7 +11,6 @@ from typing import Generator
 
 from flask import current_app
 from injector import inject
-from langchain_core.messages import HumanMessage
 
 from internal.core.agent.agents import FunctionCallAgent, ReACTAgent
 from internal.core.agent.entities.agent_entity import AgentConfig
@@ -97,6 +96,7 @@ class OpenAPIService(BaseService):
             "created_by": end_user.id,
             "invoke_from": InvokeFrom.SERVICE_API,
             "query": req.query.data,
+            "image_urls": req.image_urls.data,
             "status": MessageStatus.NORMAL
         })
 
@@ -124,6 +124,7 @@ class OpenAPIService(BaseService):
                 account_id=account.id,
                 dataset_ids=[dataset['id'] for dataset in app_config["datasets"]],
                 retrieval_source=RetrievalSource.APP,
+                source_app_id=app.id,
                 **app_config["retrieval_config"]
             )
             tools.append(dataset_retrieval)
@@ -151,7 +152,7 @@ class OpenAPIService(BaseService):
 
         # 15.定义智能体状态基础数据
         agent_state = {
-            "messages": [HumanMessage(req.query.data)],
+            "messages": [llm.convert_to_human_message(req.query.data, req.image_urls.data)],
             "history": history,
             "long_term_memory": conversation.summary,
         }
@@ -229,6 +230,7 @@ class OpenAPIService(BaseService):
             "end_user_id": str(end_user.id),
             "conversation_id": str(conversation.id),
             "query": req.query.data,
+            "image_urls": req.image_urls.data,
             "answer": agent_result.answer,
             "total_token_count": 0,
             "latency": 0,

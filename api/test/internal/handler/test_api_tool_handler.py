@@ -49,5 +49,5 @@ class TestApiToolHandler:
         assert resp.status_code == 200
 
         from internal.model import ApiToolProvider
-        api_tool_provider = db.session.query(ApiToolProvider).get(provider_id)
+        api_tool_provider = db.session.get(ApiToolProvider, provider_id)
         assert api_tool_provider is None

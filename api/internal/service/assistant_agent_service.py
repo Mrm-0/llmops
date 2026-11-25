@@ -13,7 +13,6 @@ from uuid import UUID
 
 from flask import current_app
 from injector import inject
-from langchain_core.messages import HumanMessage
 from langchain_core.tools import BaseTool, tool
 from pydantic import BaseModel, Field
 from sqlalchemy import desc
@@ -27,7 +26,7 @@ from internal.core.language_model.providers.deepseek.chat import Chat
 from internal.core.memory import TokenBufferMemory
 from internal.entity.conversation_entity import InvokeFrom, MessageStatus
 from internal.model import Account, Message
-from internal.schema.assistant_agent_schema import GetAssistantAgentMessagesWithPageReq
+from internal.schema.assistant_agent_schema import GetAssistantAgentMessagesWithPageReq, AssistantAgentChat
 from internal.task.app_task import auto_create_app
 from pkg.paginator import Paginator
 from pkg.sqlalchemy import SQLAlchemy
@@ -44,7 +43,7 @@ class AssistantAgentService(BaseService):
     faiss_service: FaissService
     conversation_service: ConversationService
 
-    def chat(self, query, account: Account) -> Generator:
+    def chat(self, req: AssistantAgentChat, account: Account) -> Generator:
         """传递query与账号实现与辅助Agent进行会话"""
         # 1.获取辅助Agent对应的id
         assistant_agent_id = current_app.config.get("ASSISTANT_AGENT_ID")
@@ -57,9 +56,10 @@ class AssistantAgentService(BaseService):
             Message,
             app_id=assistant_agent_id,
             conversation_id=conversation.id,
-            invoke_from=InvokeFrom.DEBUGGER,
+            invoke_from=InvokeFrom.ASSISTANT_AGENT,
             created_by=account.id,
-            query=query,
+            query=req.query.data,
+            image_urls=req.image_urls.data,
             status=MessageStatus.NORMAL,
         )
 
@@ -70,7 +70,6 @@ class AssistantAgentService(BaseService):
             features=[ModelFeature.TOOL_CALL, ModelFeature.AGENT_THOUGHT],
             metadata={},
         )
-        # llm = ChatDeepseek(model="deepseek-chat", temperature=0.8)
 
         # 5.实例化TokenBufferMemory用于提取短期记忆
         token_buffer_memory = TokenBufferMemory(
@@ -99,7 +98,7 @@ class AssistantAgentService(BaseService):
 
         agent_thoughts = {}
         for agent_thought in agent.stream({
-            "messages": [HumanMessage(query)],
+            "messages": [llm.convert_to_human_message(req.query.data, req.image_urls.data)],
             "history": history,
             "long_term_memory": conversation.summary,
         }):

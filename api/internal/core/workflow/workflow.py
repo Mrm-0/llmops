@@ -14,6 +14,7 @@ from langchain_core.tools import BaseTool
 from langgraph.graph.state import CompiledStateGraph, StateGraph
 from pydantic import PrivateAttr, Field, create_model, BaseModel
 
+from internal.exception import ValidateErrorException
 from .entities.node_entity import NodeType
 from .entities.variable_entity import VARIABLE_TYPE_MAP
 from .entities.workflow_entity import WorkflowConfig, WorkflowState
@@ -27,7 +28,6 @@ from .nodes import (
     ToolNode,
     HttpRequestNode
 )
-from ...exception import ValidateErrorException
 
 # 节点类映射
 NodeClasses = {

@@ -93,7 +93,7 @@ class AnalysisService(BaseService):
         """根据传递的时间段获取指定应用的消息会话数据"""
         return self.db.session.query(Message).with_entities(
             Message.id, Message.conversation_id, Message.created_by,
-            Message.total_token_count, Message.total_message_count,
+            Message.total_token_count, Message.total_price,
             Message.created_at, Message.latency
         ).filter(
             Message.app_id == app.id,

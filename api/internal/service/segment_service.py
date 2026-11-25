@@ -19,6 +19,7 @@ from sqlalchemy import asc, func
 from internal.entity.cache_entity import LOCK_SEGMENT_UPDATE_ENABLED, LOCK_EXPIRE_TIME
 from internal.entity.dataset_entity import SegmentStatus, DocumentStatus
 from internal.exception import NotFoundException, ForbiddenException, FailException, ValidateErrorException
+from internal.lib.helper import generate_text_hash
 from internal.model import Segment, Document, Account
 from internal.schema.segment_schema import GetSegmentsWithPageReq, CreateSegmentReq, UpdateSegmentReq
 from pkg.paginator import Paginator
@@ -28,7 +29,6 @@ from .embeddings_service import EmbeddingsService
 from .jieba_service import JiebaService
 from .keyword_table_service import KeywordTableService
 from .vector_database_service import VectorDatabaseService
-from ..lib.helper import generate_text_hash
 
 
 @inject

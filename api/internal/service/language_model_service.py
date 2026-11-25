@@ -130,7 +130,20 @@ class LanguageModelService(BaseService):
             )
             return self.load_default_language_model()
 
-    @classmethod
-    def load_default_language_model(cls) -> BaseLanguageModel:
+    def load_default_language_model(self) -> BaseLanguageModel:
         """加载默认的大语言模型，在模型管理器中获取不到模型或者出错时使用默认模型进行兜底"""
-        return ChatDeepSeek(model='deepseek-chat', temperature=0.5)
+        # 1.获取openai服务提供者与模型类
+        provider = self.language_model_manager.get_provider("deepseek")
+        model_entity = provider.get_model_entity("deepseek-flash")
+        model_class = provider.get_model_class(model_entity.model_type)
+
+        # bug:原先写法使用的是LangChain封装的LLM类，需要替换成自定义封装的类，否则会识别到模型不存在features
+
+        # 2.实例化模型并返回
+        return model_class(
+            **model_entity.attributes,
+            temperature=1,
+            max_tokens=393216,
+            features=model_entity.features,
+            metadata=model_entity.metadata,
+        )

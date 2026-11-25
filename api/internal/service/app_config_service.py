@@ -69,7 +69,7 @@ class AppConfigService(BaseService):
 
         # 8.将数据转换成字典
         return self._process_and_transformer_app_config(
-            validate_model_config, tools, datasets, workflows, draft_app_config
+            validate_model_config, tools, workflows, datasets, draft_app_config
         )
 
     def get_app_config(self, app: App) -> dict[str, Any]:
@@ -110,7 +110,7 @@ class AppConfigService(BaseService):
 
         # 8.将数据转换成字典
         return self._process_and_transformer_app_config(
-            validate_model_config, tools, datasets, workflows, app_config
+            validate_model_config, tools, workflows, datasets, app_config
         )
 
     def get_langchain_tools_by_tools_config(self, tools_config: list[dict]) -> list[BaseTool]:
@@ -197,6 +197,7 @@ class AppConfigService(BaseService):
             "opening_questions": app_config.opening_questions,
             "speech_to_text": app_config.speech_to_text,
             "text_to_speech": app_config.text_to_speech,
+            "suggested_after_answer": app_config.suggested_after_answer,
             "review_config": app_config.review_config,
             "updated_at": datetime_to_timestamp(app_config.updated_at),
             "created_at": datetime_to_timestamp(app_config.created_at),

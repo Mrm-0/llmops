@@ -13,13 +13,13 @@ from typing import Any
 from flask import request
 from injector import inject
 
+from internal.exception import NotFoundException
+from internal.model import AccountOAuth
 from pkg.oauth import OAuth, GithubOAuth
 from pkg.sqlalchemy import SQLAlchemy
 from .account_service import AccountService
 from .base_service import BaseService
 from .jwt_service import JwtService
-from ..exception import NotFoundException
-from ..model import AccountOAuth
 
 
 @inject
@@ -81,7 +81,7 @@ class OAuthService(BaseService):
                 )
 
             # 7.添加授权认证记录
-            account_oauth=self.create(
+            account_oauth = self.create(
                 AccountOAuth,
                 account_id=account.id,
                 provider=provider_name,

@@ -15,7 +15,6 @@ from uuid import UUID
 import requests
 from flask import current_app
 from injector import inject
-from langchain_core.messages import HumanMessage
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableParallel
@@ -35,6 +34,7 @@ from internal.core.tools.api_tools.providers import ApiProviderManager
 from internal.core.tools.builtin_tools.providers import BuiltinProviderManager
 from internal.entity.ai_entity import OPTIMIZE_PROMPT_TEMPLATE
 from internal.entity.app_entity import AppStatus, AppConfigType, DEFAULT_APP_CONFIG, GENERATE_ICON_PROMPT_TEMPLATE
+from internal.entity.audio_entity import ALLOWED_AUDIO_VOICES
 from internal.entity.conversation_entity import InvokeFrom, MessageStatus
 from internal.entity.dataset_entity import RetrievalSource
 from internal.entity.workflow_entity import WorkflowStatus
@@ -61,7 +61,7 @@ from internal.schema.app_schema import (
     CreateAppReq,
     GetPublishHistoriesWithPageReq,
     GetDebugConversationMessagesWithPageReq,
-    GetAppsWithPageReq
+    GetAppsWithPageReq, DebugChatReq
 )
 from pkg.paginator import Paginator
 from pkg.sqlalchemy import SQLAlchemy
@@ -296,8 +296,7 @@ class AppService(BaseService):
         draft_app_config_record = app.draft_app_config
         self.update(
             draft_app_config_record,
-            # todo: 由于目前使用server_onupdate,所以该字段需要手动传递
-            updated_at=datetime.now(),
+            # updated_at 由模型列的 onupdate=datetime.now 自动刷新
             **draft_app_config,
         )
 
@@ -444,8 +443,7 @@ class AppService(BaseService):
         draft_app_config_record = app.draft_app_config
         self.update(
             draft_app_config_record,
-            # todo:更新时间补丁信息
-            updated_at=datetime.now(),
+            # updated_at 由模型列的 onupdate=datetime.now 自动刷新
             **draft_app_config_dict
         )
 
@@ -493,7 +491,7 @@ class AppService(BaseService):
 
         return app
 
-    def debug_chat(self, app_id: UUID, query: str, account: Account) -> Generator:
+    def debug_chat(self, app_id: UUID, req: DebugChatReq, account: Account) -> Generator:
         """根据传递的应用id+提问query，向指定的应用发起会话调试"""
         # 1.获取应用并校验权限
         app = self.get_app(app_id, account)
@@ -511,7 +509,8 @@ class AppService(BaseService):
             conversation_id=debug_conversation.id,
             invoke_from=InvokeFrom.DEBUGGER,
             created_by=account.id,
-            query=query,
+            query=req.query.data,
+            image_urls=req.image_urls.data,
             status=MessageStatus.NORMAL,
         )
 
@@ -539,6 +538,7 @@ class AppService(BaseService):
                 account_id=account.id,
                 dataset_ids=[dataset['id'] for dataset in draft_app_config["datasets"]],
                 retrieval_source=RetrievalSource.APP,
+                source_app_id=app.id,
                 **draft_app_config["retrieval_config"]
             )
             tools.append(dataset_retrieval)
@@ -566,7 +566,7 @@ class AppService(BaseService):
 
         agent_thoughts = {}
         for agent_thought in agent.stream({
-            "messages": [HumanMessage(query)],
+            "messages": [llm.convert_to_human_message(req.query.data, req.image_urls.data)],
             "history": history,
             "long_term_memory": debug_conversation.summary,
         }):
@@ -984,8 +984,7 @@ class AppService(BaseService):
             if (
                     set(text_to_speech.keys()) != {"enable", "voice", "auto_play"}
                     or not isinstance(text_to_speech["enable"], bool)
-                    # todo:等待多模态Agent实现时添加音色
-                    or text_to_speech["voice"] not in ["echo"]
+                    or text_to_speech["voice"] not in ALLOWED_AUDIO_VOICES
                     or not isinstance(text_to_speech["auto_play"], bool)
             ):
                 raise ValidateErrorException("文本转语音设置格式错误")

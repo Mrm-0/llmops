@@ -36,4 +36,4 @@ class BaseService:
         return model_instance
 
     def get(self, model: Any, primary_key) -> Optional[Any]:
-        return self.db.session.query(model).get(primary_key)
+        return self.db.session.get(model, primary_key)

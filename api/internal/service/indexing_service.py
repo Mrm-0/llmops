@@ -13,26 +13,26 @@ from datetime import datetime
 from uuid import UUID
 
 from injector import inject
-from internal.core.file_extractor import FileExtractor
-from internal.entity.dataset_entity import DocumentStatus, SegmentStatus
-from internal.lib.helper import generate_text_hash
-from internal.model import Document, Segment, KeywordTable, DatasetQuery
 from langchain_core.documents import Document as LCDocument
-from pkg.sqlalchemy import SQLAlchemy
 from redis import Redis
 from sqlalchemy import func
 from weaviate.classes.query import Filter
 
+from internal.core.file_extractor import FileExtractor
+from internal.entity.cache_entity import (
+    LOCK_DOCUMENT_UPDATE_ENABLED,
+)
+from internal.entity.dataset_entity import DocumentStatus, SegmentStatus
+from internal.exception import NotFoundException
+from internal.lib.helper import generate_text_hash
+from internal.model import Document, Segment, KeywordTable, DatasetQuery
+from pkg.sqlalchemy import SQLAlchemy
 from .base_service import BaseService
 from .embeddings_service import EmbeddingsService
 from .jieba_service import JiebaService
 from .keyword_table_service import KeywordTableService
 from .process_rule_service import ProcessRuleService
 from .vector_database_service import VectorDatabaseService
-from ..entity.cache_entity import (
-    LOCK_DOCUMENT_UPDATE_ENABLED,
-)
-from ..exception import NotFoundException
 
 
 @inject

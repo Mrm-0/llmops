@@ -5,6 +5,8 @@
 @Author   :314907015@qq.com
 @File     :conversation.py
 """
+from datetime import datetime
+
 from sqlalchemy import (
     Column,
     UUID,
@@ -43,12 +45,14 @@ class Conversation(db.Model):
         DateTime,
         nullable=False,
         server_default=text("CURRENT_TIMESTAMP(0)"),
-        server_onupdate=text("CURRENT_TIMESTAMP(0)"),
+        default=datetime.now,
+        onupdate=datetime.now,
     )
     created_at = Column(
         DateTime,
         nullable=False,
         server_default=text("CURRENT_TIMESTAMP(0)"),
+        default=datetime.now,
     )
 
     @property
@@ -78,6 +82,7 @@ class Message(db.Model):
 
     # 消息关联的原始问题
     query = Column(Text, nullable=False, server_default=text("''::text"))
+    image_urls = Column(JSONB, nullable=False, server_default=text("'[]'::jsonb"))
     message = Column(JSONB, nullable=False, server_default=text("'[]'::jsonb"))
     message_token_count = Column(Integer, nullable=False, server_default=text("0"))
     message_unit_price = Column(Numeric(10, 7), nullable=False, server_default=text("0.0"))
@@ -101,12 +106,14 @@ class Message(db.Model):
         DateTime,
         nullable=False,
         server_default=text("CURRENT_TIMESTAMP(0)"),
-        server_onupdate=text("CURRENT_TIMESTAMP(0)"),
+        default=datetime.now,
+        onupdate=datetime.now,
     )
     created_at = Column(
         DateTime,
         nullable=False,
         server_default=text("CURRENT_TIMESTAMP(0)"),
+        default=datetime.now,
     )
 
     # 智能体推理列表，创建表关联
@@ -119,6 +126,11 @@ class Message(db.Model):
         foreign_keys=[id],
         primaryjoin="MessageAgentThought.message_id == Message.id",
     )
+
+    @property
+    def conversation(self) -> Conversation:
+        """只读属性，返回该消息对应的会话记录"""
+        return db.session.get(Conversation, self.conversation_id)
 
 
 class MessageAgentThought(db.Model):
@@ -165,10 +177,12 @@ class MessageAgentThought(db.Model):
         DateTime,
         nullable=False,
         server_default=text("CURRENT_TIMESTAMP(0)"),
-        server_onupdate=text("CURRENT_TIMESTAMP(0)"),
+        default=datetime.now,
+        onupdate=datetime.now,
     )
     created_at = Column(
         DateTime,
         nullable=False,
         server_default=text("CURRENT_TIMESTAMP(0)"),
+        default=datetime.now,
     )

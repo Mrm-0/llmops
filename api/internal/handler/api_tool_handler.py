@@ -57,7 +57,7 @@ class ApiToolHandler:
         """更新自定义API工具提供者信息"""
         req = UpdateApiToolProviderReq()
         if not req.validate():
-            raise validate_error_json(req.errors)
+            return validate_error_json(req.errors)
 
         self.api_tool_service.update_api_tool_provider(provider_id, req, current_user)
 
@@ -68,7 +68,7 @@ class ApiToolHandler:
         """获取API工具提供者列表信息，该接口支持分页"""
         req = GetApiToolProvidersWithPageReq(request.args)
         if not req.validate():
-            raise validate_error_json(req.errors)
+            return validate_error_json(req.errors)
 
         api_tool_providers, paginator = self.api_tool_service.get_api_tool_providers_with_page(req, current_user)
 

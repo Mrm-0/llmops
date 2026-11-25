@@ -62,6 +62,7 @@ class AgentThought(BaseModel):
 class AgentResult(BaseModel):
     """智能体推理观察最终结果"""
     query: str = ""
+    image_urls: list[str] = Field(default_factory=list)
 
     message: list[dict] = Field(default_factory=list)
     message_token_count: int = 0

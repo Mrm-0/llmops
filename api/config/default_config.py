@@ -12,20 +12,20 @@ DEFAULT_CONFIG = {
     "WTF_CSRF_ENABLED": "False",
 
     # SQLAlchemy数据库配置
-    "SQLALCHEMY_DATABASE_URI": "postgresql+psycopg2://postgres:1234@192.168.159.129:5432/llmops",
+    "SQLALCHEMY_DATABASE_URI": "postgresql://postgres:llmops123456@192.168.159.128:5432/llmops",
     "SQLALCHEMY_POOL_SIZE": 30,
     "SQLALCHEMY_POOL_RECYCLE": 3600,
     "SQLALCHEMY_ECHO": "True",
 
     # Weaviate向量数据库配置
-    "WEAVIATE_HTTP_HOST": "localhost",
+    "WEAVIATE_HTTP_HOST": "192.168.159.128",
     "WEAVIATE_HTTP_PORT": 8080,
-    "WEAVIATE_GRPC_HOST": "localhost",
+    "WEAVIATE_GRPC_HOST": "192.168.159.128",
     "WEAVIATE_GRPC_PORT": 50051,
     "WEAVIATE_API_KEY": "",
 
     # Redis数据库配置
-    "REDIS_HOST": "localhost",
+    "REDIS_HOST": "192.168.159.128",
     "REDIS_PORT": 6379,
     "REDIS_USERNAME": "",
     "REDIS_PASSWORD": "",

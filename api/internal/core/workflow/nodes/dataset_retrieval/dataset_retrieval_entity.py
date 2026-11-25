@@ -35,18 +35,15 @@ class DatasetRetrievalNodeData(BaseNodeData):
     )
 
     @field_validator("inputs")
-    def validate_inputs(cls, values: dict):
+    def validate_inputs(cls, inputs: list[VariableEntity]):
         """校验输入变量信息"""
-        # 1.提取inputs对应信息
-        inputs = values.get("inputs", [])
-
-        # 2.判断是否只有一个输入变量，如果有多个则抛出错误
+        # 1.判断是否只有一个输入变量，如果有多个则抛出错误
         if len(inputs) != 1:
             raise FailException("知识库节点输入变量信息出错")
 
-        # 3.判断输入遍历那个的类型及字段名称是否出错
+        # 2.判断输入变量的类型及字段名称是否出错
         query_input: VariableEntity = inputs[0]
-        if query_input.name != "query" or query_input.type != VariableValueType.GENERATED or query_input.required is False:
+        if query_input.name != "query" or query_input.value.type != VariableValueType.GENERATED or query_input.required is False:
             raise FailException("知识库节点输入变量名字/变量类型/必填属性出错")
 
-        return values
+        return inputs

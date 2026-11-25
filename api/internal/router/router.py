@@ -27,6 +27,7 @@ from internal.handler import (
     BuiltinAppHandler,
     WorkflowHandler, LanguageModelHandler,
     AssistantAgentHandler, AnalysisHandler, WebAppHandler, ConversationHandler,
+    AudioHandler, PlatformHandler, WechatHandler,
 )
 
 
@@ -54,6 +55,9 @@ class Router:
     analysis_handler: AnalysisHandler
     web_app_handler: WebAppHandler
     conversation_handler: ConversationHandler
+    audio_handler: AudioHandler
+    wechat_handler: WechatHandler
+    platform_handler: PlatformHandler
 
     def register_router(self, app: Flask):
         """注册路由"""
@@ -462,6 +466,34 @@ class Router:
             view_func=self.conversation_handler.update_conversation_is_pinned,
         )
 
-        # 16.在应用上去注册蓝图
+        # 18.语音转换模块
+        bp.add_url_rule(
+            "/audio/audio-to-text",
+            methods=["POST"],
+            view_func=self.audio_handler.audio_to_text,
+        )
+        bp.add_url_rule(
+            "/audio/message-to-audio",
+            methods=["POST"],
+            view_func=self.audio_handler.message_to_audio,
+        )
+
+        # 19.第三方平台配置模块
+        bp.add_url_rule(
+            "/platform/<uuid:app_id>/wechat-config",
+            view_func=self.platform_handler.get_wechat_config,
+        )
+        bp.add_url_rule(
+            "/platform/<uuid:app_id>/wechat-config",
+            methods=["POST"],
+            view_func=self.platform_handler.update_wechat_config,
+        )
+        bp.add_url_rule(
+            "/wechat/<uuid:app_id>",
+            methods=["GET", "POST"],
+            view_func=self.wechat_handler.wechat,
+        )
+
+        # 20.在应用上去注册蓝图
         app.register_blueprint(bp)
         app.register_blueprint(openapi_bp)
